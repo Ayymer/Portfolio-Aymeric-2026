@@ -1,0 +1,17 @@
+---
+// Project detail page — will be driven by content collections once set up.
+// For now redirects to works index with the slug as a query param.
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (() => {
+  // Placeholder — replace with getCollection('projects') when ready
+  const slugs = [
+    'project-one', 'project-two', 'project-three',
+    'project-four', 'project-five', 'project-six', 'project-seven',
+  ];
+  return slugs.map((slug) => ({ params: { slug } }));
+}) satisfies GetStaticPaths;
+
+const { slug } = Astro.params;
+return Astro.redirect(`/works?project=${slug}`);
+---

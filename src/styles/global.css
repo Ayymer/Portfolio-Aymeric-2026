@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  /* ─── Color tokens ─────────────────────────────────────── */
+
+  /* Lime scale */
+  --color-lime-1:  #fbfefa;
+  --color-lime-11: #3b8021;
+  --color-lime-12: #273f1c;
+
+  /* Cyan scale */
+  --color-cyan-1:  #f9fdfe;
+  --color-cyan-3:  #ddf7f8;
+
+  /* Neutrals */
+  --color-ghost:            rgba(255, 255, 255, 0);
+  --color-ghost-fg:         #404040;
+  --color-border-muted:     #737373;
+  --color-frame-stroke:     rgba(39, 63, 28, 0.7);
+  --color-placeholder:      #d9d9d9;
+
+  /* ─── Typography ───────────────────────────────────────── */
+  --font-lausanne: 'TWK Lausanne', sans-serif;
+  --font-mono:     'IBM Plex Mono', monospace;
+
+  /* Font weights */
+  --font-weight-light:   250;
+  --font-weight-regular: 350;
+  --font-weight-bold:    700;
+
+  /* ─── Spacing ──────────────────────────────────────────── */
+  --spacing-3xs: 2px;
+  --spacing-2xs: 4px;
+  --spacing-xs:  8px;
+  --spacing-sm:  12px;
+  --spacing-md:  16px;
+  --spacing-lg:  20px;
+  --spacing-xl:  24px;
+  --spacing-2xl: 32px;
+  --spacing-7xl: 96px;
+  --spacing-10xl: 144px;
+
+  /* ─── Border radius ────────────────────────────────────── */
+  --radius-sm: 1px;
+  --radius-lg: 8px;
+}
+
+/* ─── Base styles ──────────────────────────────────────────── */
+@layer base {
+  html {
+    background-color: var(--color-lime-1);
+    color: var(--color-lime-12);
+    font-family: var(--font-lausanne);
+    font-weight: var(--font-weight-regular);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+  }
+}

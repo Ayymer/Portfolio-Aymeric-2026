@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="About — Aymeric Fremont"
+  description="About Aymeric Fremont, designer based in Nantes, France."
+>
+  <div class="flex flex-col h-full p-5 gap-6">
+    <!-- Heading -->
+    <div class="px-[18px] pt-6">
+      <p
+        class="text-[24px] leading-[27px] font-[350] text-lime-12"
+        style="font-family: var(--font-lausanne);"
+      >
+        At the core of my work is a commitment to eco-responsibility and conscious
+        consumption—I believe design has the duty to shape behavior and influence
+        positive change.
+      </p>
+    </div>
+
+    <!-- Portrait image placeholder -->
+    <div class="flex-1 mx-[18px] min-h-0">
+      <div class="w-full h-full bg-placeholder rounded-sm" style="min-height: 400px;" />
+    </div>
+  </div>
+</BaseLayout>

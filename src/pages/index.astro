@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Aymeric Fremont — Designer">
+  <div class="flex flex-col justify-between h-full p-5 gap-8">
+    <!-- Bio text — top left, max ~552px -->
+    <div class="max-w-[552px]">
+      <p
+        class="text-[24px] leading-[27px] font-[350] text-lime-11"
+        style="font-family: var(--font-lausanne);"
+      >
+        I am Aymeric, a designer and aspiring entrepreneur based in Nantes, France.
+        <br /><br />
+        My practice spans UX/UI design, graphic design, branding, illustration, and creative photography, combining aesthetic sensibility with technical precision.
+        <br /><br />
+        At the core of my work is a commitment to eco-responsibility and conscious consumption—I believe design has the duty to shape behavior and influence positive change. I design with a "pixel-perfect" philosophy, embracing a clean, focused aesthetic inspired by the technical world of code and development environments.
+      </p>
+    </div>
+
+    <!-- Logo widget — IDE window style -->
+    <div class="px-24 flex justify-end">
+      <div
+        class="bg-lime-1 flex flex-col gap-[6.44px] p-[6.44px] w-full"
+        style="border: 1.61px solid var(--color-frame-stroke);"
+      >
+        <!-- Title bar -->
+        <div class="flex items-center justify-between">
+          <span
+            class="text-[12px] leading-6 text-lime-12"
+            style="font-family: var(--font-mono);"
+          >
+            Hello World!
+          </span>
+          <!-- Minimize button (decorative) -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-lime-12 cursor-pointer">
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </div>
+        <!-- Logo display area -->
+        <div
+          class="bg-cyan-1 flex items-center justify-center py-10 px-8"
+          style="border: 1.61px solid var(--color-frame-stroke); border-radius: 1.61px;"
+        >
+          <img src="/logo-full.svg" alt="Aymeric Fremont" class="w-full max-h-[100px] object-contain" />
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

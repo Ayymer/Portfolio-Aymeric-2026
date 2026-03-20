@@ -1,0 +1,39 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Aymeric Fremont — Designer',
+  description = 'UX/UI designer and aspiring entrepreneur based in Nantes, France.',
+} = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+
+  <body class="bg-lime-1 text-lime-12">
+    <!-- Outer container: 16px page padding on desktop, 8px on mobile -->
+    <div class="flex flex-col h-screen p-2 md:p-4 gap-2 md:gap-4">
+      <Header />
+
+      <!-- Main content panel: outer (lime-1 bg) → inner (cyan-1 bg) -->
+      <main class="flex-1 min-h-0 bg-lime-1 border border-frame-stroke p-1">
+        <div class="bg-cyan-1 border border-frame-stroke rounded-sm h-full overflow-auto">
+          <slot />
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+// Placeholder projects — replace with content collection later
+const projects = [
+  { slug: 'project-one',   title: 'Project One' },
+  { slug: 'project-two',   title: 'Project Two' },
+  { slug: 'project-three', title: 'Project Three' },
+  { slug: 'project-four',  title: 'Project Four' },
+  { slug: 'project-five',  title: 'Project Five' },
+  { slug: 'project-six',   title: 'Project Six' },
+  { slug: 'project-seven', title: 'Project Seven' },
+];
+
+const currentSlug = Astro.url.searchParams.get('project') ?? projects[1]?.slug;
+const activeProject = projects.find((p) => p.slug === currentSlug) ?? projects[1];
+---
+
+<BaseLayout title="Works — Aymeric Fremont">
+  <div class="flex h-full gap-4 p-1">
+
+    <!-- Left column: file explorer -->
+    <div
+      class="flex flex-col gap-[2px] shrink-0 p-1"
+      style="width: 459px; background: var(--color-lime-1); border: 1px solid var(--color-frame-stroke);"
+    >
+      <!-- Section label -->
+      <div class="flex items-center px-1" style="height: 24px;">
+        <span
+          class="text-[12px] leading-6 text-lime-12 whitespace-nowrap"
+          style="font-family: var(--font-mono);"
+        >
+          / Work Selection - [{projects.length}]
+        </span>
+      </div>
+
+      <!-- Project list -->
+      <div
+        class="flex-1 min-h-0 px-[6px]"
+        style="background: var(--color-cyan-1); border: 1px solid var(--color-frame-stroke); border-radius: 1px;"
+      >
+        {projects.map((project) => {
+          const isActive = project.slug === activeProject?.slug;
+          return (
+            <a
+              href={`/works?project=${project.slug}`}
+              class={[
+                'flex items-center gap-2 py-1 border-b',
+                isActive
+                  ? 'bg-cyan-3'
+                  : 'hover:bg-cyan-3/50',
+              ].join(' ')}
+              style="border-color: var(--color-border-muted); height: 32px;"
+            >
+              <!-- Folder icon -->
+              <svg
+                width="16" height="16" viewBox="0 0 16 16" fill="none"
+                stroke="currentColor" stroke-width="1.2"
+                class="shrink-0 text-lime-12"
+              >
+                {isActive ? (
+                  /* folder-open */
+                  <path d="M1.5 4.5h4l1.5 1.5H14.5v7H1.5V4.5z M1.5 6H14.5" />
+                ) : (
+                  /* folder */
+                  <path d="M1.5 3.5h4l1.5 1.5H14.5v7.5H1.5V3.5z" />
+                )}
+              </svg>
+              <span
+                class="text-[16px] leading-6 font-[250] text-lime-12 whitespace-nowrap"
+                style="font-family: var(--font-lausanne);"
+              >
+                {project.title}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </div>
+
+    <!-- Right column: project detail -->
+    <div
+      class="flex flex-col flex-1 min-w-0 gap-1 p-1"
+      style="background: var(--color-lime-1); border: 1px solid var(--color-frame-stroke);"
+    >
+      <!-- Section label -->
+      <div class="flex items-center" style="height: 24px;">
+        <span
+          class="text-[12px] leading-6 text-lime-12 whitespace-nowrap"
+          style="font-family: var(--font-mono);"
+        >
+          / {activeProject?.title ?? 'Project Name'}
+        </span>
+      </div>
+
+      <!-- Content card -->
+      <div
+        class="flex-1 min-h-0 flex flex-col gap-8 overflow-auto p-3"
+        style="background: var(--color-cyan-1); border: 1px solid var(--color-frame-stroke); border-radius: 1px;"
+      >
+        {activeProject && (
+          <>
+            <!-- Project title -->
+            <h1
+              class="text-[48px] leading-[48px] font-[700] text-lime-12 tracking-[-1.5px]"
+              style="font-family: var(--font-lausanne);"
+            >
+              {activeProject.title}
+            </h1>
+
+            <!-- Metadata table -->
+            <div class="flex flex-col self-end" style="width: 393px;">
+              <div
+                class="flex items-center justify-between py-[6px] border-b border-dashed"
+                style="border-color: var(--color-lime-11);"
+              >
+                <span class="text-[14px] leading-6 text-lime-11" style="font-family: var(--font-mono);">(YEAR)</span>
+                <span class="text-[14px] leading-6 text-lime-11" style="font-family: var(--font-mono);">2024</span>
+              </div>
+              <div
+                class="flex items-start justify-between py-[6px] border-b border-dashed"
+                style="border-color: var(--color-lime-11);"
+              >
+                <span class="text-[14px] leading-6 text-lime-11 shrink-0" style="font-family: var(--font-mono);">(SERVICES)</span>
+                <span class="text-[14px] leading-6 text-lime-11 text-right" style="font-family: var(--font-mono);">
+                  Web design<br />Art direction<br />Web development
+                </span>
+              </div>
+            </div>
+
+            <!-- Image placeholder -->
+            <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 624px;" />
+
+            <!-- Sub heading -->
+            <p
+              class="text-[24px] leading-[27px] font-[350] text-lime-11"
+              style="font-family: var(--font-lausanne);"
+            >
+              About
+            </p>
+
+            <!-- Description -->
+            <div class="px-36 pb-6">
+              <p
+                class="text-[24px] leading-[27px] font-[250] text-lime-11"
+                style="font-family: var(--font-lausanne);"
+              >
+                Project description goes here.
+              </p>
+            </div>
+
+            <!-- Second image placeholder -->
+            <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 326px;" />
+          </>
+        )}
+      </div>
+    </div>
+
+  </div>
+</BaseLayout>
