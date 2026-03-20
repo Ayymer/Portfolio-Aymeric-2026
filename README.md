@@ -1,43 +1,57 @@
-# Astro Starter Kit: Minimal
+# Portfolio — Aymeric Fremont (2026)
 
-```sh
-bun create astro@latest -- --template minimal
+Personal portfolio showcasing UX/UI, branding, and design projects.
+
+**Live:** *coming soon*
+
+## Stack
+
+- [Astro 5](https://astro.build) — static site generator
+- [Tailwind CSS 4](https://tailwindcss.com) — utility-first styling
+- [Bun](https://bun.sh) — package manager & runtime
+- Deployed on Vercel / Netlify *(TBD)*
+
+## Getting started
+
+```bash
+# Clone
+git clone https://github.com/Ayymer/Portfolio-Aymeric-2026.git
+cd Portfolio-Aymeric-2026
+
+# Install
+bun install
+
+# Dev server
+bun run dev
+
+# Build
+bun run build
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Project structure
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```
+src/
+├── layouts/          # Shared layout (header, footer, meta)
+├── pages/            # Astro pages (index, about, works)
+├── components/       # Reusable UI components
+├── content/          # Content collections (projects)
+└── styles/           # Global CSS & Tailwind config
+public/               # Static assets (images, fonts, SVGs)
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Design
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Designed in Figma — [view the design file](https://www.figma.com/design/d387FE7lye4kCfo0pKDb46/Portfolio-Aymeric-2026).
 
-Any static assets, like images, can be placed in the `public/` directory.
+Built using the Figma MCP → Claude Code workflow for design-to-code fidelity.
 
-## 🧞 Commands
+**Fonts:** TWK Lausanne, IBM Plex Mono
 
-All commands are run from the root of the project, from a terminal:
+## Project tracking
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun dev`             | Starts local dev server at `localhost:4321`      |
-| `bun build`           | Build your production site to `./dist/`          |
-| `bun preview`         | Preview your build locally, before deploying     |
-| `bun astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `bun astro -- --help` | Get help using the Astro CLI                     |
+Issues tracked in [Linear](https://linear.app/ayymer/project/portfolio-070ab2cecdca/overview).
 
-## 👀 Want to learn more?
+## License
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+All rights reserved. This is a personal portfolio — code and design are not licensed for reuse.
