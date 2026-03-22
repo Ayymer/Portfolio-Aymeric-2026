@@ -26,11 +26,12 @@ jobs:
         run: bun run build
 
       - name: Deploy via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          local-dir: ./dist/
-          server-dir: /sites/aymericfremont.com/
-          protocol: ftps
+          port: 22
+          local_path: ./dist/*
+          remote_path: /sites/aymericfremont.com/
+          sftp_only: true
