@@ -2,14 +2,16 @@
 
 Personal portfolio showcasing UX/UI, branding, and design projects.
 
-**Live:** *coming soon*
+**Live:** [aymericfremont.com](https://aymericfremont.com)
 
 ## Stack
 
-- [Astro 5](https://astro.build) — static site generator
+- [Astro 6](https://astro.build) — static site generator
 - [Tailwind CSS 4](https://tailwindcss.com) — utility-first styling
+- [Paper Shaders](https://github.com/paper-design/shaders) — WebGL halftone effect (about page)
 - [Bun](https://bun.sh) — package manager & runtime
-- Deployed on Vercel / Netlify *(TBD)*
+- Hosted on [Infomaniak](https://infomaniak.com) — eco-friendly Swiss hosting (100% renewable energy)
+- Auto-deployed via GitHub Actions on push to `main`
 
 ## Getting started
 
@@ -33,11 +35,12 @@ bun run build
 ```
 src/
 ├── layouts/          # Shared layout (header, footer, meta)
-├── pages/            # Astro pages (index, about, works)
+├── pages/            # Astro pages (index, about, works, lab)
 ├── components/       # Reusable UI components
 ├── content/          # Content collections (projects)
 └── styles/           # Global CSS & Tailwind config
 public/               # Static assets (images, fonts, SVGs)
+.github/workflows/    # CI/CD (auto-deploy to Infomaniak via FTP)
 ```
 
 ## Design
@@ -47,6 +50,10 @@ Designed in Figma — [view the design file](https://www.figma.com/design/d387FE
 Built using the Figma MCP → Claude Code workflow for design-to-code fidelity.
 
 **Fonts:** TWK Lausanne, IBM Plex Mono
+
+## Deployment
+
+Pushes to `main` trigger an automatic build & deploy via GitHub Actions → FTP to Infomaniak shared hosting. Work on feature branches and merge to `main` when ready to go live.
 
 ## Project tracking
 
