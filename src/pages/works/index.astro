@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Folder from '../../components/icons/Folder.astro';
-import FolderOpen from '../../components/icons/FolderOpen.astro';
+import ProjectSidebar from '../../components/ProjectSidebar.astro';
 import { getCollection } from 'astro:content';
 
 const projects = (await getCollection('projects')).sort(
@@ -13,37 +12,10 @@ const projects = (await getCollection('projects')).sort(
   <div class="flex h-full gap-4 p-1">
 
     <!-- Left column: full width on mobile, fixed 459px on desktop -->
-    <div id="left-column" class="flex flex-col gap-[2px] p-1 bg-lime-1 border border-frame-stroke w-full md:w-[459px] md:shrink-0">
-      <!-- Section label -->
-      <div class="flex items-center px-1 h-6">
-        <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
-          / Work Selection - [{projects.length}]
-        </span>
-      </div>
-
-      <!-- Project list -->
-      <div class="flex-1 min-h-0 px-[6px] py-[3px] bg-cyan-1 border border-frame-stroke rounded-sm">
-        {projects.map((project) => {
-          const firstImage = project.data.sections?.[0]?.image;
-          return (
-          <a
-            href={`/works/${project.id}`}
-            class="works-row flex items-center gap-2 py-1 border-b border-border-muted w-full text-left transition-colors h-8"
-            data-slug={project.id}
-            data-title={project.data.title}
-            data-thumb-bg={firstImage?.bg}
-            data-thumb-fg={firstImage?.fg}
-          >
-            <span class="icon-closed shrink-0 text-lime-12"><Folder /></span>
-            <span class="icon-open shrink-0 text-lime-12 hidden"><FolderOpen /></span>
-            <span class="text-[16px] leading-6 font-[250] text-lime-12 whitespace-nowrap font-lausanne">
-              {project.data.title}
-            </span>
-          </a>
-          );
-        })}
-      </div>
-    </div>
+    <ProjectSidebar
+      projects={projects}
+      class="w-full md:w-sidebar md:shrink-0"
+    />
 
     <!-- ─── Desktop right column (hidden on mobile) ─────────────────── -->
     <div class="hidden md:flex flex-col flex-1 min-w-0 gap-1 p-1 bg-lime-1 border border-frame-stroke">
@@ -58,10 +30,7 @@ const projects = (await getCollection('projects')).sort(
 
       <!-- Hover preview -->
       <div id="right-preview" class="hidden flex-1 min-h-0 items-center justify-center bg-cyan-1 border border-frame-stroke rounded-sm overflow-hidden">
-        <div id="preview-thumb" class="relative bg-white overflow-hidden" style="width: 60%; aspect-ratio: 901/675.75;">
-          <img id="preview-bg" alt="" class="absolute inset-0 w-full h-full object-cover blur-[2px]" />
-          <img id="preview-fg" alt="" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 object-contain" />
-        </div>
+        <img id="preview-thumb" alt="" class="object-contain" style="width: 60%; aspect-ratio: 901/675.75;" />
       </div>
 
     </div>
@@ -70,58 +39,56 @@ const projects = (await getCollection('projects')).sort(
 </BaseLayout>
 
 <script>
-  const rows         = document.querySelectorAll<HTMLAnchorElement>('.works-row');
-  const rightLabel   = document.getElementById('right-label')!;
-  const rightSpacer  = document.getElementById('right-spacer')!;
-  const rightTitle   = document.getElementById('right-title')!;
-  const rightPreview = document.getElementById('right-preview')!;
-  const previewBg    = document.getElementById('preview-bg') as HTMLImageElement;
-  const previewFg    = document.getElementById('preview-fg') as HTMLImageElement;
-  const previewThumb = document.getElementById('preview-thumb')!;
+  const rows         = document.querySelectorAll<HTMLAnchorElement>('.project-row');
+  const rightLabel   = document.getElementById('right-label');
+  const rightSpacer  = document.getElementById('right-spacer');
+  const rightTitle   = document.getElementById('right-title');
+  const rightPreview = document.getElementById('right-preview');
+  const previewThumb = document.getElementById('preview-thumb') as HTMLImageElement | null;
 
-  function isMobile() {
-    return window.innerWidth < 768;
-  }
-
-  function showPreview(row: HTMLAnchorElement) {
-    const bg = row.dataset.thumbBg;
-    const fg = row.dataset.thumbFg;
-
-    if (bg && fg) {
-      previewBg.src = bg;
-      previewFg.src = fg;
-      previewThumb.classList.remove('hidden');
-    } else {
-      previewThumb.classList.add('hidden');
+  if (rightLabel && rightSpacer && rightTitle && rightPreview && previewThumb) {
+    function isMobile() {
+      return window.innerWidth < 768;
     }
 
-    rightTitle.textContent     = row.dataset.title!;
-    rightLabel.style.display   = 'flex';
-    rightSpacer.style.display  = 'none';
-    rightPreview.style.display = 'flex';
-  }
+    function showPreview(row: HTMLAnchorElement) {
+      const thumb = row.dataset.thumb;
 
-  function hidePreview() {
-    rightLabel.style.display   = 'none';
-    rightSpacer.style.display  = 'block';
-    rightPreview.style.display = 'none';
-  }
+      if (thumb) {
+        previewThumb.src = thumb;
+        previewThumb.classList.remove('hidden');
+      } else {
+        previewThumb.classList.add('hidden');
+      }
 
-  rows.forEach((row) => {
-    row.addEventListener('mouseenter', () => {
-      if (isMobile()) return;
-      row.classList.add('bg-cyan-3');
-      row.querySelector('.icon-closed')!.classList.add('hidden');
-      row.querySelector('.icon-open')!.classList.remove('hidden');
-      showPreview(row);
+      rightTitle.textContent     = row.dataset.title ?? '';
+      rightLabel.style.display   = 'flex';
+      rightSpacer.style.display  = 'none';
+      rightPreview.style.display = 'flex';
+    }
+
+    function hidePreview() {
+      rightLabel.style.display   = 'none';
+      rightSpacer.style.display  = 'block';
+      rightPreview.style.display = 'none';
+    }
+
+    rows.forEach((row) => {
+      row.addEventListener('mouseenter', () => {
+        if (isMobile()) return;
+        row.classList.add('bg-cyan-3');
+        row.querySelector('.icon-closed')?.classList.add('hidden');
+        row.querySelector('.icon-open')?.classList.remove('hidden');
+        showPreview(row);
+      });
+
+      row.addEventListener('mouseleave', () => {
+        if (isMobile()) return;
+        row.classList.remove('bg-cyan-3');
+        row.querySelector('.icon-closed')?.classList.remove('hidden');
+        row.querySelector('.icon-open')?.classList.add('hidden');
+        hidePreview();
+      });
     });
-
-    row.addEventListener('mouseleave', () => {
-      if (isMobile()) return;
-      row.classList.remove('bg-cyan-3');
-      row.querySelector('.icon-closed')!.classList.remove('hidden');
-      row.querySelector('.icon-open')!.classList.add('hidden');
-      hidePreview();
-    });
-  });
+  }
 </script>

@@ -1,0 +1,25 @@
+---
+interface Props {
+  heading: string;
+  highlight: string;
+  detail: string;
+}
+
+const { heading, highlight, detail } = Astro.props;
+---
+
+<div class="flex flex-col gap-8">
+  <div class="px-2 md:px-section-twocol">
+    <p class="text-[24px] leading-[27px] font-regular text-lime-10 font-lausanne">
+      {heading}
+    </p>
+  </div>
+  <div class="flex flex-col md:flex-row gap-5 px-2 md:px-section-twocol">
+    <p class="flex-1 text-[16px] leading-6 font-light text-lime-10 font-lausanne">
+      {highlight}
+    </p>
+    <div class="flex-1 text-[16px] leading-6 font-light text-lime-11 font-lausanne whitespace-pre-line">
+      {detail}
+    </div>
+  </div>
+</div>

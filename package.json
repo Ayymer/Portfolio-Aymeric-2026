@@ -1,5 +1,5 @@
 {
-  "name": "puffy-point",
+  "name": "portfolio-aymeric-2026",
   "type": "module",
   "version": "0.0.1",
   "engines": {
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@paper-design/shaders": "^0.0.72",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.0.7",
     "tailwindcss": "^4.2.2"

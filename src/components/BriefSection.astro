@@ -1,0 +1,21 @@
+---
+interface Props {
+  heading: string;
+  content: string;
+}
+
+const { heading, content } = Astro.props;
+---
+
+<div class="flex flex-col gap-8">
+  <div class="px-2 md:px-section-brief">
+    <p class="text-[24px] leading-[27px] font-regular text-lime-11 font-lausanne">
+      {heading}
+    </p>
+  </div>
+  <div class="px-2 md:px-section-brief">
+    <p class="text-[24px] leading-[27px] font-light text-lime-11 font-lausanne">
+      {content}
+    </p>
+  </div>
+</div>

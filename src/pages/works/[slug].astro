@@ -1,7 +1,10 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Folder from '../../components/icons/Folder.astro';
-import FolderOpen from '../../components/icons/FolderOpen.astro';
+import ProjectSidebar from '../../components/ProjectSidebar.astro';
+import CaseImage from '../../components/CaseImage.astro';
+import BriefSection from '../../components/BriefSection.astro';
+import TwoColumnSection from '../../components/TwoColumnSection.astro';
 import { getCollection, render } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 
@@ -19,43 +22,18 @@ const allProjects = (await getCollection('projects')).sort(
 );
 
 const { Content } = await render(project);
+const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImage?.src;
 ---
 
-<BaseLayout title={`${project.data.title} — Aymeric Fremont`} noInnerCard>
+<BaseLayout title={`${project.data.title} — Aymeric Fremont`} ogImage={ogImage} noInnerCard>
   <div class="flex h-full gap-4 p-1">
 
     <!-- Left column: file explorer (hidden on mobile) -->
-    <div class="hidden md:flex flex-col gap-[2px] p-1 bg-lime-1 border border-frame-stroke w-[459px] shrink-0">
-      <!-- Section label -->
-      <div class="flex items-center px-1 h-6">
-        <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
-          / Work Selection - [{allProjects.length}]
-        </span>
-      </div>
-
-      <!-- Project list -->
-      <div class="flex-1 min-h-0 px-[6px] py-[3px] bg-cyan-1 border border-frame-stroke rounded-sm overflow-auto">
-        {allProjects.map((p) => (
-          <a
-            href={`/works/${p.id}`}
-            class:list={[
-              'project-row flex items-center gap-2 py-1 border-b border-border-muted w-full text-left transition-colors h-8',
-              p.id === project.id && 'bg-cyan-3',
-            ]}
-          >
-            <span class:list={['icon-closed shrink-0 text-lime-12', p.id === project.id && 'hidden']}>
-              <Folder />
-            </span>
-            <span class:list={['icon-open shrink-0 text-lime-12', p.id !== project.id && 'hidden']}>
-              <FolderOpen />
-            </span>
-            <span class="text-[16px] leading-6 font-[250] text-lime-12 whitespace-nowrap font-lausanne">
-              {p.data.title}
-            </span>
-          </a>
-        ))}
-      </div>
-    </div>
+    <ProjectSidebar
+      projects={allProjects}
+      activeId={project.id}
+      class="hidden md:flex w-sidebar shrink-0"
+    />
 
     <!-- Right column: project detail -->
     <div class="flex flex-col flex-1 min-w-0 gap-[2px] p-1 bg-lime-1 border border-frame-stroke">
@@ -88,12 +66,12 @@ const { Content } = await render(project);
           <div class="scroll-content flex flex-col gap-8">
 
         <!-- Title -->
-        <h1 class="text-[48px] leading-[48px] font-[700] text-lime-12 tracking-[-1.5px] font-lausanne">
+        <h1 class="text-[48px] leading-[48px] font-bold text-lime-12 tracking-[-1.5px] font-lausanne">
           {project.data.title}
         </h1>
 
         <!-- Metadata table -->
-        <div class="flex flex-col w-full md:w-[393px] md:self-end">
+        <div class="flex flex-col w-full md:w-meta-table md:self-end">
           <div class="flex items-center justify-between py-[6px] border-b border-dashed border-lime-11">
             <span class="text-[14px] leading-6 text-lime-11 font-mono">(YEAR)</span>
             <span class="text-[14px] leading-6 text-lime-11 font-mono">{project.data.year}</span>
@@ -119,22 +97,11 @@ const { Content } = await render(project);
                   {/* Insert closing image + tools paragraph before the last section */}
                   {isLast && project.data.closingImage && (
                     <>
-                      <div class="case-image relative w-full bg-white overflow-hidden shrink-0">
-                        <img
-                          src={project.data.closingImage.bg}
-                          alt=""
-                          class="absolute inset-0 w-full h-full object-cover blur-[2px]"
-                        />
-                        <img
-                          src={project.data.closingImage.fg}
-                          alt=""
-                          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 object-contain"
-                        />
-                      </div>
+                      <CaseImage src={project.data.closingImage} alt={project.data.title} />
                       <div class="flex flex-col gap-8">
-                        <div class="flex flex-col md:flex-row gap-5 px-2 md:px-[80px]">
+                        <div class="flex flex-col md:flex-row gap-5 px-2 md:px-section-twocol">
                           <div class="flex-1"></div>
-                          <div class="flex-1 text-[16px] leading-6 font-[250] text-lime-11 font-lausanne whitespace-pre-line">
+                          <div class="flex-1 text-[16px] leading-6 font-light text-lime-11 font-lausanne whitespace-pre-line">
                             <Content />
                           </div>
                         </div>
@@ -142,78 +109,13 @@ const { Content } = await render(project);
                     </>
                   )}
 
-                  {/* Composed image: blurred bg + sharp fg */}
-                  {section.image ? (
-                    <div class="case-image relative w-full bg-white overflow-hidden shrink-0">
-                      <img
-                        src={section.image.bg}
-                        alt=""
-                        class="absolute inset-0 w-full h-full object-cover blur-[2px]"
-                      />
-                      {section.image.variant === 'phones' ? (
-                        <div class="absolute inset-0">
-                          <img
-                            src={section.image.fg}
-                            alt={section.heading}
-                            class="absolute object-cover"
-                            style="width: 33.3%; height: 135%; left: 13.1%; top: 25.2%;"
-                          />
-                          <img
-                            src={section.image.fg}
-                            alt={section.heading}
-                            class="absolute object-cover"
-                            style="width: 33.3%; height: 135%; left: 53.5%; top: -60.3%;"
-                          />
-                        </div>
-                      ) : (
-                        <img
-                          src={section.image.fg}
-                          alt={section.heading}
-                          class:list={[
-                            'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 object-contain',
-                            section.image.variant === 'wide' ? 'w-[79%]' : 'w-2/3',
-                          ]}
-                        />
-                      )}
-                    </div>
+                  <CaseImage src={section.image} alt={section.heading} />
+
+                  {section.type === 'brief' ? (
+                    <BriefSection heading={section.heading} content={section.content} />
                   ) : (
-                    <div class="case-image w-full bg-placeholder shrink-0 overflow-hidden"></div>
+                    <TwoColumnSection heading={section.heading} highlight={section.highlight} detail={section.detail} />
                   )}
-
-                  {/* Section content */}
-                  <div class="flex flex-col gap-8">
-                    {section.type === 'brief' ? (
-                      <>
-                        <div class="px-2 md:px-[144px]">
-                          <p class="text-[24px] leading-[27px] font-[350] text-lime-11 font-lausanne">
-                            {section.heading}
-                          </p>
-                        </div>
-                        <div class="px-2 md:px-[144px]">
-                          <p class="text-[24px] leading-[27px] font-[250] text-lime-11 font-lausanne">
-                            {section.content}
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div class="px-2 md:px-[80px]">
-                          <p class="text-[24px] leading-[27px] font-[350] text-lime-10 font-lausanne">
-                            {section.heading}
-                          </p>
-                        </div>
-                        <div class="flex flex-col md:flex-row gap-5 px-2 md:px-[80px]">
-                          <p class="flex-1 text-[16px] leading-6 font-[250] text-lime-10 font-lausanne">
-                            {section.highlight}
-                          </p>
-                          <div class="flex-1 text-[16px] leading-6 font-[250] text-lime-11 font-lausanne whitespace-pre-line">
-                            {section.detail}
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                  </div>
                 </>
               );
             })}
@@ -221,9 +123,8 @@ const { Content } = await render(project);
         ) : (
           <!-- Fallback: simple layout for projects without sections -->
           <>
-            <!-- Cover image -->
             {project.data.coverImage ? (
-              <img
+              <Image
                 src={project.data.coverImage}
                 alt={project.data.title}
                 class="w-full rounded-sm shrink-0 object-cover"
@@ -233,7 +134,7 @@ const { Content } = await render(project);
               <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 624px;"></div>
             )}
 
-            <p class="text-[24px] leading-[27px] font-[350] text-lime-11 font-lausanne">About</p>
+            <p class="text-[24px] leading-[27px] font-regular text-lime-11 font-lausanne">About</p>
 
             <div class="px-2 md:px-0 pb-6" style="--indent: 144px;">
               <div class="md:pl-[var(--indent)] text-lime-11 font-lausanne prose-project">
@@ -242,7 +143,7 @@ const { Content } = await render(project);
             </div>
 
             {project.data.secondaryImage ? (
-              <img
+              <Image
                 src={project.data.secondaryImage}
                 alt={`${project.data.title} — detail`}
                 class="w-full rounded-sm shrink-0 object-cover"
@@ -299,24 +200,10 @@ const { Content } = await render(project);
     display: none;
   }
 
-  .project-row:hover {
-    background-color: var(--color-cyan-3);
-  }
-  .project-row:hover .icon-closed {
-    display: none;
-  }
-  .project-row:hover .icon-open {
-    display: inline-flex !important;
-  }
-
-  .case-image {
-    aspect-ratio: 901 / 675.75;
-  }
-
   .prose-project p {
     font-size: 16px;
     line-height: 24px;
-    font-weight: 250;
+    font-weight: var(--font-weight-light);
   }
 
   @media (min-width: 768px) {

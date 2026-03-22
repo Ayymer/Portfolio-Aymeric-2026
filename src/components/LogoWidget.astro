@@ -5,20 +5,21 @@
 
 <div
   id="logo-widget"
-  style="position: absolute; left: 96px; right: 96px; bottom: 20px; border: 1.61px solid var(--color-frame-stroke); background: var(--color-lime-1); display: flex; flex-direction: column; gap: 6.44px; padding: 6.44px;"
+  class="absolute flex flex-col bg-lime-1 border-[1.61px] border-frame-stroke gap-[6.44px] p-[6.44px]"
+  style="left: 96px; right: 96px; bottom: 20px;"
 >
   <!-- Title bar — drag handle for both states -->
   <div
     id="widget-titlebar"
-    style="display: flex; align-items: center; justify-content: space-between; user-select: none; touch-action: none; cursor: grab;"
+    class="flex items-center justify-between select-none touch-none cursor-grab"
   >
-    <span style="font-family: var(--font-mono); font-size: 16px; line-height: 24px; color: var(--color-lime-12);">
+    <span class="font-mono text-[16px] leading-6 text-lime-12">
       Hello World!
     </span>
     <button
       id="widget-toggle"
       aria-label="Toggle widget"
-      style="display: flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; color: var(--color-lime-12); transition: opacity 0.15s;"
+      class="flex items-center justify-center bg-transparent border-none p-0 cursor-pointer text-lime-12 transition-opacity duration-150 hover:opacity-50"
     >
       <svg id="icon-minus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M5 12h14"/>
@@ -33,34 +34,31 @@
   <!-- Expanded: full logo banner -->
   <div
     id="widget-expanded"
-    style="background: var(--color-cyan-1); border: 1.61px solid var(--color-frame-stroke); border-radius: 1.61px; display: flex; align-items: center; justify-content: center; padding: 40px 30px 30px;"
+    class="flex items-center justify-center bg-cyan-1 border-[1.61px] border-frame-stroke rounded-[1.61px] pt-10 px-[30px] pb-[30px]"
   >
-    <img src="/Logo_Banner.svg" alt="Aymeric Fremont" style="width: 100%; max-height: 100px; object-fit: contain;" />
+    <img src="/Logo_Banner.svg" alt="Aymeric Fremont" class="w-full max-h-[100px] object-contain" />
   </div>
 
   <!-- Minimized: AF monogram -->
   <div
     id="widget-minimized"
-    style="display: none; border: 1.61px solid var(--color-frame-stroke); border-radius: 1.61px; width: 192px; height: 155px; position: relative; overflow: hidden;"
+    class="relative overflow-hidden border-[1.61px] border-frame-stroke rounded-[1.61px] w-[192px] h-[155px]"
+    style="display: none;"
   >
-    <img src="/Logo_Small.svg" alt="AF" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 20px;" />
+    <img src="/Logo_Small.svg" alt="AF" class="absolute inset-0 w-full h-full object-contain p-5" />
   </div>
 </div>
 
-<style>
-  #widget-toggle:hover {
-    opacity: 0.5;
-  }
-</style>
-
 <script>
-  const widget      = document.getElementById('logo-widget')!;
-  const titlebar    = document.getElementById('widget-titlebar')!;
-  const toggleBtn   = document.getElementById('widget-toggle')!;
-  const iconMinus   = document.getElementById('icon-minus')!;
-  const iconPlus    = document.getElementById('icon-plus')!;
-  const expandedEl  = document.getElementById('widget-expanded')!;
-  const minimizedEl = document.getElementById('widget-minimized')!;
+  const widget      = document.getElementById('logo-widget');
+  const titlebar    = document.getElementById('widget-titlebar');
+  const toggleBtn   = document.getElementById('widget-toggle');
+  const iconMinus   = document.getElementById('icon-minus');
+  const iconPlus    = document.getElementById('icon-plus');
+  const expandedEl  = document.getElementById('widget-expanded');
+  const minimizedEl = document.getElementById('widget-minimized');
+
+  if (!widget || !titlebar || !toggleBtn || !iconMinus || !iconPlus || !expandedEl || !minimizedEl) throw new Error('LogoWidget: missing DOM elements');
 
   let isMinimized = false;
   let isDragging  = false;
@@ -118,11 +116,11 @@
     widget.style.width        = `${expandedW}px`;
   }
 
-  // ── Drag — works in both states ──────────────────────────
-  titlebar.addEventListener('mousedown', (e) => {
+  // ── Drag — works in both states (pointer events = mouse + touch) ─
+  titlebar.addEventListener('pointerdown', (e) => {
     if ((e.target as HTMLElement).closest('#widget-toggle')) return;
 
-    // Always read actual rendered position — avoids NaN from unset style.top
+    titlebar.setPointerCapture(e.pointerId);
     ensureAbsolutePosition();
 
     isDragging  = true;
@@ -135,7 +133,7 @@
     document.body.style.userSelect = 'none';
   });
 
-  document.addEventListener('mousemove', (e) => {
+  document.addEventListener('pointermove', (e) => {
     if (!isDragging) return;
 
     const parent  = widget.parentElement!;
@@ -146,7 +144,7 @@
     widget.style.top  = `${Math.max(0, Math.min(maxTop,  startTop  + (e.clientY - mouseStartY)))}px`;
   });
 
-  document.addEventListener('mouseup', () => {
+  document.addEventListener('pointerup', () => {
     if (!isDragging) return;
     isDragging = false;
     titlebar.style.cursor          = 'grab';

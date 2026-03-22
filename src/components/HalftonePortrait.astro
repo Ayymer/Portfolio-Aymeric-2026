@@ -1,0 +1,61 @@
+---
+// DitheringEffect — Animated dithering pattern shader
+// Uses @paper-design/shaders dithering (warp shape, 4x4 Bayer)
+
+interface Props {
+  alt?: string;
+}
+
+const { alt = 'Animated dithering pattern' } = Astro.props;
+---
+
+<div
+  id="dithering-container"
+  class="w-full h-full rounded-sm overflow-hidden"
+  style="min-height: 400px;"
+  aria-label={alt}
+  role="img"
+>
+</div>
+
+<script>
+  import {
+    ShaderMount,
+    ditheringFragmentShader,
+    getShaderColorFromString,
+    ShaderFitOptions,
+  } from '@paper-design/shaders';
+
+  const container = document.getElementById('dithering-container');
+  if (!container) throw new Error('Missing #dithering-container');
+
+  const uniforms = {
+    u_colorBack:  getShaderColorFromString('#fbfefe'),
+    u_colorFront: getShaderColorFromString('#b3eaef'),
+    u_shape: 2,       // warp
+    u_type: 3,        // 4x4 Bayer
+    u_pxSize: 2.2,
+    u_fit: ShaderFitOptions.cover,
+    u_scale: 0.6,
+    u_rotation: 72,
+    u_offsetX: -1,
+    u_offsetY: -1,
+    u_originX: 0.5,
+    u_originY: 0.5,
+    u_worldWidth: 0,
+    u_worldHeight: 0,
+  };
+
+  const shaderMount = new ShaderMount(
+    container,
+    ditheringFragmentShader,
+    uniforms,
+    undefined,
+    0.2,       // speed
+  );
+
+  // Clean up on page navigation (Astro view transitions)
+  document.addEventListener('astro:before-swap', () => {
+    shaderMount.dispose();
+  }, { once: true });
+</script>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HalftonePortrait from '../components/HalftonePortrait.astro';
 ---
 
 <BaseLayout
@@ -10,8 +11,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <!-- Heading -->
     <div class="px-[18px] pt-6">
       <p
-        class="text-[24px] leading-[28px] md:text-[48px] md:leading-[52px] font-[300] text-lime-11"
-        style="font-family: var(--font-lausanne);"
+        class="text-[24px] leading-[28px] md:text-[48px] md:leading-[52px] font-book text-lime-11"
       >
         At the core of my work is a commitment to eco-responsibility and conscious
         consumption—I believe design has the duty to shape behavior and influence
@@ -19,9 +19,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </p>
     </div>
 
-    <!-- Portrait image placeholder -->
+    <!-- Animated dithering pattern -->
     <div class="flex-1 mx-[18px] min-h-0">
-      <div class="w-full h-full bg-placeholder rounded-sm" style="min-height: 400px;" />
+      <HalftonePortrait />
     </div>
   </div>
 </BaseLayout>

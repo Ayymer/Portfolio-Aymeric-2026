@@ -1,21 +1,10 @@
 ---
-const navLinks = [
-  { label: 'Home',  href: '/' },
-  { label: 'Works', href: '/works' },
-  { label: 'Lab',   href: '/lab' },
-  { label: 'About', href: '/about' },
-];
-
-const socials = [
-  { label: 'Email',     href: 'mailto:hello@aymericfremont.com' },
-  { label: 'Instagram', href: 'https://instagram.com/' },
-  { label: 'Linkedin',  href: 'https://linkedin.com/in/' },
-];
+import { navLinks, socials } from '../data/navigation';
 
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="flex items-center justify-between shrink-0 w-full" style="height: 36px;">
+<header class="flex items-center justify-between shrink-0 w-full" class="h-nav-h">
   <!-- Navbar: logo + nav links (nav links hidden on mobile) -->
   <nav class="flex items-center">
     <!-- Logo: always visible -->
@@ -28,17 +17,13 @@ const currentPath = Astro.url.pathname;
         (link.href !== '/' && currentPath.startsWith(link.href));
       return isActive ? (
         <span
-          class="hidden md:flex items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] text-lime-12"
-          style="font-family: var(--font-lausanne);"
-        >
+          class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-lime-12"        >
           {link.label}
         </span>
       ) : (
         <a
           href={link.href}
-          class="hidden md:flex items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] opacity-50 hover:opacity-100 transition-opacity text-ghost-fg"
-          style="font-family: var(--font-lausanne);"
-        >
+          class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular opacity-50 hover:opacity-100 transition-opacity text-ghost-fg"        >
           {link.label}
         </a>
       );
@@ -51,18 +36,16 @@ const currentPath = Astro.url.pathname;
     <div class="hidden md:flex items-center">
       {socials.map((social, i) => (<><a
           href={social.href}
-          class="flex items-center justify-center min-h-[36px] pl-1 py-0.5 text-[16px] leading-6 font-[350] text-ghost-fg hover:opacity-50 transition-opacity"
-          style="font-family: var(--font-lausanne);"
-          target={social.href.startsWith('http') ? '_blank' : undefined}
+          class="flex items-center justify-center min-h-nav-h pl-1 py-0.5 text-[16px] leading-6 font-regular text-ghost-fg hover:opacity-50 transition-opacity"          target={social.href.startsWith('http') ? '_blank' : undefined}
           rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-        >{social.label}</a>{i < socials.length - 1 && <span class="text-[16px] leading-6 text-ghost-fg" style="font-family: var(--font-lausanne);">,</span>}</>))}
+        >{social.label}</a>{i < socials.length - 1 && <span class="text-[16px] leading-6 text-ghost-fg">,</span>}</>))}
     </div>
 
     <!-- Mobile menu button: mobile only -->
     <button
       id="mobile-menu-btn"
-      class="flex md:hidden items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] text-ghost-fg"
-      style="font-family: var(--font-lausanne); background: none; border: none; cursor: pointer;"
+      class="flex md:hidden items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-ghost-fg"
+      style="background: none; border: none; cursor: pointer;"
       aria-label="Toggle menu"
     >
       <span id="menu-btn-text">Open Menu</span>

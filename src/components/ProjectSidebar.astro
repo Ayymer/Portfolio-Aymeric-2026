@@ -1,0 +1,61 @@
+---
+import Folder from './icons/Folder.astro';
+import FolderOpen from './icons/FolderOpen.astro';
+
+interface Props {
+  projects: Array<{ id: string; data: { title: string; sections?: Array<{ image?: ImageMetadata }> } }>;
+  activeId?: string;
+  class?: string;
+}
+
+const { projects, activeId, class: className } = Astro.props;
+---
+
+<div class:list={['flex flex-col gap-[2px] p-1 bg-lime-1 border border-frame-stroke', className]}>
+  <div class="flex items-center px-1 h-6">
+    <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+      / Work Selection - [{projects.length}]
+    </span>
+  </div>
+
+  <div class="flex-1 min-h-0 px-[6px] py-[3px] bg-cyan-1 border border-frame-stroke rounded-sm overflow-auto">
+    {projects.map((p) => {
+      const isActive = activeId === p.id;
+      const firstImage = p.data.sections?.[0]?.image;
+      return (
+        <a
+          href={`/works/${p.id}`}
+          class:list={[
+            'project-row flex items-center gap-2 py-1 border-b border-border-muted w-full text-left transition-colors h-8',
+            isActive && 'bg-cyan-3',
+          ]}
+          data-slug={p.id}
+          data-title={p.data.title}
+          data-thumb={firstImage?.src}
+        >
+          <span class:list={['icon-closed shrink-0 text-lime-12', isActive && 'hidden']}>
+            <Folder />
+          </span>
+          <span class:list={['icon-open shrink-0 text-lime-12', !isActive && 'hidden']}>
+            <FolderOpen />
+          </span>
+          <span class="text-[16px] leading-6 font-light text-lime-12 whitespace-nowrap font-lausanne">
+            {p.data.title}
+          </span>
+        </a>
+      );
+    })}
+  </div>
+</div>
+
+<style is:global>
+  .project-row:hover {
+    background-color: var(--color-cyan-3);
+  }
+  .project-row:hover .icon-closed {
+    display: none;
+  }
+  .project-row:hover .icon-open {
+    display: inline-flex !important;
+  }
+</style>

@@ -4,33 +4,26 @@ import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
 import '@fontsource/ibm-plex-mono/700.css';
 import Header from '../components/Header.astro';
+import { navLinks, socials } from '../data/navigation';
 
 interface Props {
   title?: string;
   description?: string;
+  ogImage?: string;
   noInnerCard?: boolean;
 }
 
 const {
   title = 'Aymeric Fremont — Designer',
   description = 'UX/UI designer and aspiring entrepreneur based in Nantes, France.',
+  ogImage,
   noInnerCard = false,
 } = Astro.props;
 
+const canonicalURL = new URL(Astro.url.pathname, Astro.site ?? 'https://aymericfremont.com');
+const ogImageURL = ogImage ? new URL(ogImage, Astro.site ?? 'https://aymericfremont.com').href : undefined;
+
 const currentPath = Astro.url.pathname;
-
-const navLinks = [
-  { label: 'Home',  href: '/' },
-  { label: 'Works', href: '/works' },
-  { label: 'Lab',   href: '/lab' },
-  { label: 'About', href: '/about' },
-];
-
-const socials = [
-  { label: 'Email',     href: 'mailto:hello@aymericfremont.com' },
-  { label: 'Instagram', href: 'https://instagram.com/' },
-  { label: 'Linkedin',  href: 'https://linkedin.com/in/' },
-];
 ---
 
 <html lang="en">
@@ -39,8 +32,21 @@ const socials = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImageURL && <meta property="og:image" content={ogImageURL} />}
+    <!-- Twitter -->
+    <meta name="twitter:card" content={ogImageURL ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="preload" href="/fonts/TWKLausanne-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/TWKLausanne-350.woff2" as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
   </head>
 
@@ -70,7 +76,7 @@ const socials = [
               {navLinks.map((link) => (
                 <a
                   href={link.href}
-                  class="flex items-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] text-lime-1 font-lausanne"
+                  class="flex items-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-lime-1 font-lausanne"
                 >
                   {link.label}
                 </a>
@@ -82,7 +88,7 @@ const socials = [
               <div class="flex items-center">
                 {socials.map((social, i) => (<><a
                     href={social.href}
-                    class="flex items-center min-h-[36px] pl-1 py-0.5 text-[16px] leading-6 font-[350] text-lime-1 font-lausanne"
+                    class="flex items-center min-h-nav-h pl-1 py-0.5 text-[16px] leading-6 font-regular text-lime-1 font-lausanne"
                     target={social.href.startsWith('http') ? '_blank' : undefined}
                     rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   >{social.label}</a>{i < socials.length - 1 && <span class="text-[16px] leading-6 text-lime-1 font-lausanne">,</span>}</>))}
