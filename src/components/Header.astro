@@ -16,11 +16,11 @@ const currentPath = Astro.url.pathname;
 ---
 
 <header class="flex items-center justify-between shrink-0 w-full" style="height: 36px;">
-  <!-- Navbar: logo + nav links -->
+  <!-- Navbar: logo + nav links (nav links hidden on mobile) -->
   <nav class="flex items-center">
-    <!-- Logo -->
+    <!-- Logo: always visible -->
     <a href="/" class="shrink-0 mr-1" aria-label="Aymeric Fremont">
-      <img src="/logo.svg" alt="AF" width="43" height="24" />
+      <img src="/Logo_Small.svg" alt="AF" width="43" height="24" />
     </a>
 
     {navLinks.map((link) => {
@@ -28,7 +28,7 @@ const currentPath = Astro.url.pathname;
         (link.href !== '/' && currentPath.startsWith(link.href));
       return isActive ? (
         <span
-          class="flex items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] text-lime-12"
+          class="hidden md:flex items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] text-lime-12"
           style="font-family: var(--font-lausanne);"
         >
           {link.label}
@@ -36,7 +36,7 @@ const currentPath = Astro.url.pathname;
       ) : (
         <a
           href={link.href}
-          class="flex items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] opacity-50 hover:opacity-100 transition-opacity text-ghost-fg"
+          class="hidden md:flex items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] opacity-50 hover:opacity-100 transition-opacity text-ghost-fg"
           style="font-family: var(--font-lausanne);"
         >
           {link.label}
@@ -45,23 +45,27 @@ const currentPath = Astro.url.pathname;
     })}
   </nav>
 
-  <!-- Socials -->
+  <!-- Right side: socials on desktop, "Open Menu" on mobile -->
   <div class="flex items-center">
-    {socials.map((social, i) => (
-      <span class="flex items-center">
-        <a
+    <!-- Socials: desktop only -->
+    <div class="hidden md:flex items-center">
+      {socials.map((social, i) => (<><a
           href={social.href}
-          class="flex items-center justify-center min-h-[36px] px-1 py-0.5 text-[16px] leading-6 font-[350] text-ghost-fg hover:text-lime-12 transition-colors"
+          class="flex items-center justify-center min-h-[36px] pl-1 py-0.5 text-[16px] leading-6 font-[350] text-ghost-fg hover:opacity-50 transition-opacity"
           style="font-family: var(--font-lausanne);"
           target={social.href.startsWith('http') ? '_blank' : undefined}
           rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-        >
-          {social.label}
-        </a>
-        {i < socials.length - 1 && (
-          <span class="text-[16px] leading-6 text-ghost-fg" style="font-family: var(--font-lausanne);">,</span>
-        )}
-      </span>
-    ))}
+        >{social.label}</a>{i < socials.length - 1 && <span class="text-[16px] leading-6 text-ghost-fg" style="font-family: var(--font-lausanne);">,</span>}</>))}
+    </div>
+
+    <!-- Mobile menu button: mobile only -->
+    <button
+      id="mobile-menu-btn"
+      class="flex md:hidden items-center justify-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] text-ghost-fg"
+      style="font-family: var(--font-lausanne); background: none; border: none; cursor: pointer;"
+      aria-label="Toggle menu"
+    >
+      <span id="menu-btn-text">Open Menu</span>
+    </button>
   </div>
 </header>

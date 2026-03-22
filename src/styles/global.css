@@ -5,12 +5,17 @@
 
   /* Lime scale */
   --color-lime-1:  #fbfefa;
+  --color-lime-10: #5fbf36;
   --color-lime-11: #3b8021;
   --color-lime-12: #273f1c;
 
   /* Cyan scale */
   --color-cyan-1:  #f9fdfe;
   --color-cyan-3:  #ddf7f8;
+  --color-cyan-12: #043b45;
+
+  /* Gray scale */
+  --color-gray-1: #fdfdfd;
 
   /* Neutrals */
   --color-ghost:            rgba(255, 255, 255, 0);
@@ -20,7 +25,8 @@
   --color-placeholder:      #d9d9d9;
 
   /* ─── Typography ───────────────────────────────────────── */
-  --font-lausanne: 'TWK Lausanne', sans-serif;
+  --font-sans:     'TWK Lausanne', system-ui, sans-serif;
+  --font-lausanne: 'TWK Lausanne', system-ui, sans-serif;
   --font-mono:     'IBM Plex Mono', monospace;
 
   /* Font weights */
@@ -45,10 +51,71 @@
   --radius-lg: 8px;
 }
 
+/* ─── TWK Lausanne @font-face declarations ─────────────────── */
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-50.woff2') format('woff2'); font-weight: 50; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-50Italic.woff2') format('woff2'); font-weight: 50; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-100.woff2') format('woff2'); font-weight: 100; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-100Italic.woff2') format('woff2'); font-weight: 100; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-150.woff2') format('woff2'); font-weight: 150; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-150Italic.woff2') format('woff2'); font-weight: 150; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-200.woff2') format('woff2'); font-weight: 200; font-style: normal; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-250.woff2') format('woff2'); font-weight: 250; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-250Italic.woff2') format('woff2'); font-weight: 250; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-300.woff2') format('woff2'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-300Italic.woff2') format('woff2'); font-weight: 300; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-350.woff2') format('woff2'); font-weight: 350; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-350Italic.woff2') format('woff2'); font-weight: 350; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-400.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-400Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-450.woff2') format('woff2'); font-weight: 450; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-450Italic.woff2') format('woff2'); font-weight: 450; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-500.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-500Italic.woff2') format('woff2'); font-weight: 500; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-550.woff2') format('woff2'); font-weight: 550; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-550Italic.woff2') format('woff2'); font-weight: 550; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-600.woff2') format('woff2'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-600Italic.woff2') format('woff2'); font-weight: 600; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-650.woff2') format('woff2'); font-weight: 650; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-650Italic.woff2') format('woff2'); font-weight: 650; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-700.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-700Italic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-750.woff2') format('woff2'); font-weight: 750; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-750Italic.woff2') format('woff2'); font-weight: 750; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-800.woff2') format('woff2'); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-800Italic.woff2') format('woff2'); font-weight: 800; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-850.woff2') format('woff2'); font-weight: 850; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-850Italic.woff2') format('woff2'); font-weight: 850; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-900.woff2') format('woff2'); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-900Italic.woff2') format('woff2'); font-weight: 900; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-950.woff2') format('woff2'); font-weight: 950; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-950Italic.woff2') format('woff2'); font-weight: 950; font-style: italic; font-display: swap; }
+
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-1000.woff2') format('woff2'); font-weight: 1000; font-style: normal; font-display: swap; }
+@font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-1000Italic.woff2') format('woff2'); font-weight: 1000; font-style: italic; font-display: swap; }
+
 /* ─── Base styles ──────────────────────────────────────────── */
 @layer base {
   html {
-    background-color: var(--color-lime-1);
+    background-color: var(--color-gray-1);
     color: var(--color-lime-12);
     font-family: var(--font-lausanne);
     font-weight: var(--font-weight-regular);

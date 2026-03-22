@@ -1,160 +1,127 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import Folder from '../../components/icons/Folder.astro';
+import FolderOpen from '../../components/icons/FolderOpen.astro';
+import { getCollection } from 'astro:content';
 
-// Placeholder projects — replace with content collection later
-const projects = [
-  { slug: 'project-one',   title: 'Project One' },
-  { slug: 'project-two',   title: 'Project Two' },
-  { slug: 'project-three', title: 'Project Three' },
-  { slug: 'project-four',  title: 'Project Four' },
-  { slug: 'project-five',  title: 'Project Five' },
-  { slug: 'project-six',   title: 'Project Six' },
-  { slug: 'project-seven', title: 'Project Seven' },
-];
-
-const currentSlug = Astro.url.searchParams.get('project') ?? projects[1]?.slug;
-const activeProject = projects.find((p) => p.slug === currentSlug) ?? projects[1];
+const projects = (await getCollection('projects')).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)
+);
 ---
 
-<BaseLayout title="Works — Aymeric Fremont">
+<BaseLayout title="Works — Aymeric Fremont" noInnerCard>
   <div class="flex h-full gap-4 p-1">
 
-    <!-- Left column: file explorer -->
-    <div
-      class="flex flex-col gap-[2px] shrink-0 p-1"
-      style="width: 459px; background: var(--color-lime-1); border: 1px solid var(--color-frame-stroke);"
-    >
+    <!-- Left column: full width on mobile, fixed 459px on desktop -->
+    <div id="left-column" class="flex flex-col gap-[2px] p-1 bg-lime-1 border border-frame-stroke w-full md:w-[459px] md:shrink-0">
       <!-- Section label -->
-      <div class="flex items-center px-1" style="height: 24px;">
-        <span
-          class="text-[12px] leading-6 text-lime-12 whitespace-nowrap"
-          style="font-family: var(--font-mono);"
-        >
+      <div class="flex items-center px-1 h-6">
+        <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
           / Work Selection - [{projects.length}]
         </span>
       </div>
 
       <!-- Project list -->
-      <div
-        class="flex-1 min-h-0 px-[6px]"
-        style="background: var(--color-cyan-1); border: 1px solid var(--color-frame-stroke); border-radius: 1px;"
-      >
+      <div class="flex-1 min-h-0 px-[6px] py-[3px] bg-cyan-1 border border-frame-stroke rounded-sm">
         {projects.map((project) => {
-          const isActive = project.slug === activeProject?.slug;
+          const firstImage = project.data.sections?.[0]?.image;
           return (
-            <a
-              href={`/works?project=${project.slug}`}
-              class={[
-                'flex items-center gap-2 py-1 border-b',
-                isActive
-                  ? 'bg-cyan-3'
-                  : 'hover:bg-cyan-3/50',
-              ].join(' ')}
-              style="border-color: var(--color-border-muted); height: 32px;"
-            >
-              <!-- Folder icon -->
-              <svg
-                width="16" height="16" viewBox="0 0 16 16" fill="none"
-                stroke="currentColor" stroke-width="1.2"
-                class="shrink-0 text-lime-12"
-              >
-                {isActive ? (
-                  /* folder-open */
-                  <path d="M1.5 4.5h4l1.5 1.5H14.5v7H1.5V4.5z M1.5 6H14.5" />
-                ) : (
-                  /* folder */
-                  <path d="M1.5 3.5h4l1.5 1.5H14.5v7.5H1.5V3.5z" />
-                )}
-              </svg>
-              <span
-                class="text-[16px] leading-6 font-[250] text-lime-12 whitespace-nowrap"
-                style="font-family: var(--font-lausanne);"
-              >
-                {project.title}
-              </span>
-            </a>
+          <a
+            href={`/works/${project.id}`}
+            class="works-row flex items-center gap-2 py-1 border-b border-border-muted w-full text-left transition-colors h-8"
+            data-slug={project.id}
+            data-title={project.data.title}
+            data-thumb-bg={firstImage?.bg}
+            data-thumb-fg={firstImage?.fg}
+          >
+            <span class="icon-closed shrink-0 text-lime-12"><Folder /></span>
+            <span class="icon-open shrink-0 text-lime-12 hidden"><FolderOpen /></span>
+            <span class="text-[16px] leading-6 font-[250] text-lime-12 whitespace-nowrap font-lausanne">
+              {project.data.title}
+            </span>
+          </a>
           );
         })}
       </div>
     </div>
 
-    <!-- Right column: project detail -->
-    <div
-      class="flex flex-col flex-1 min-w-0 gap-1 p-1"
-      style="background: var(--color-lime-1); border: 1px solid var(--color-frame-stroke);"
-    >
+    <!-- ─── Desktop right column (hidden on mobile) ─────────────────── -->
+    <div class="hidden md:flex flex-col flex-1 min-w-0 gap-1 p-1 bg-lime-1 border border-frame-stroke">
+
       <!-- Section label -->
-      <div class="flex items-center" style="height: 24px;">
-        <span
-          class="text-[12px] leading-6 text-lime-12 whitespace-nowrap"
-          style="font-family: var(--font-mono);"
-        >
-          / {activeProject?.title ?? 'Project Name'}
+      <div id="right-label" class="items-center h-6 hidden">
+        <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+          / <span id="right-title"></span>
         </span>
       </div>
+      <div id="right-spacer" class="h-6"></div>
 
-      <!-- Content card -->
-      <div
-        class="flex-1 min-h-0 flex flex-col gap-8 overflow-auto p-3"
-        style="background: var(--color-cyan-1); border: 1px solid var(--color-frame-stroke); border-radius: 1px;"
-      >
-        {activeProject && (
-          <>
-            <!-- Project title -->
-            <h1
-              class="text-[48px] leading-[48px] font-[700] text-lime-12 tracking-[-1.5px]"
-              style="font-family: var(--font-lausanne);"
-            >
-              {activeProject.title}
-            </h1>
-
-            <!-- Metadata table -->
-            <div class="flex flex-col self-end" style="width: 393px;">
-              <div
-                class="flex items-center justify-between py-[6px] border-b border-dashed"
-                style="border-color: var(--color-lime-11);"
-              >
-                <span class="text-[14px] leading-6 text-lime-11" style="font-family: var(--font-mono);">(YEAR)</span>
-                <span class="text-[14px] leading-6 text-lime-11" style="font-family: var(--font-mono);">2024</span>
-              </div>
-              <div
-                class="flex items-start justify-between py-[6px] border-b border-dashed"
-                style="border-color: var(--color-lime-11);"
-              >
-                <span class="text-[14px] leading-6 text-lime-11 shrink-0" style="font-family: var(--font-mono);">(SERVICES)</span>
-                <span class="text-[14px] leading-6 text-lime-11 text-right" style="font-family: var(--font-mono);">
-                  Web design<br />Art direction<br />Web development
-                </span>
-              </div>
-            </div>
-
-            <!-- Image placeholder -->
-            <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 624px;" />
-
-            <!-- Sub heading -->
-            <p
-              class="text-[24px] leading-[27px] font-[350] text-lime-11"
-              style="font-family: var(--font-lausanne);"
-            >
-              About
-            </p>
-
-            <!-- Description -->
-            <div class="px-36 pb-6">
-              <p
-                class="text-[24px] leading-[27px] font-[250] text-lime-11"
-                style="font-family: var(--font-lausanne);"
-              >
-                Project description goes here.
-              </p>
-            </div>
-
-            <!-- Second image placeholder -->
-            <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 326px;" />
-          </>
-        )}
+      <!-- Hover preview -->
+      <div id="right-preview" class="hidden flex-1 min-h-0 items-center justify-center bg-cyan-1 border border-frame-stroke rounded-sm overflow-hidden">
+        <div id="preview-thumb" class="relative bg-white overflow-hidden" style="width: 60%; aspect-ratio: 901/675.75;">
+          <img id="preview-bg" alt="" class="absolute inset-0 w-full h-full object-cover blur-[2px]" />
+          <img id="preview-fg" alt="" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 object-contain" />
+        </div>
       </div>
+
     </div>
 
   </div>
 </BaseLayout>
+
+<script>
+  const rows         = document.querySelectorAll<HTMLAnchorElement>('.works-row');
+  const rightLabel   = document.getElementById('right-label')!;
+  const rightSpacer  = document.getElementById('right-spacer')!;
+  const rightTitle   = document.getElementById('right-title')!;
+  const rightPreview = document.getElementById('right-preview')!;
+  const previewBg    = document.getElementById('preview-bg') as HTMLImageElement;
+  const previewFg    = document.getElementById('preview-fg') as HTMLImageElement;
+  const previewThumb = document.getElementById('preview-thumb')!;
+
+  function isMobile() {
+    return window.innerWidth < 768;
+  }
+
+  function showPreview(row: HTMLAnchorElement) {
+    const bg = row.dataset.thumbBg;
+    const fg = row.dataset.thumbFg;
+
+    if (bg && fg) {
+      previewBg.src = bg;
+      previewFg.src = fg;
+      previewThumb.classList.remove('hidden');
+    } else {
+      previewThumb.classList.add('hidden');
+    }
+
+    rightTitle.textContent     = row.dataset.title!;
+    rightLabel.style.display   = 'flex';
+    rightSpacer.style.display  = 'none';
+    rightPreview.style.display = 'flex';
+  }
+
+  function hidePreview() {
+    rightLabel.style.display   = 'none';
+    rightSpacer.style.display  = 'block';
+    rightPreview.style.display = 'none';
+  }
+
+  rows.forEach((row) => {
+    row.addEventListener('mouseenter', () => {
+      if (isMobile()) return;
+      row.classList.add('bg-cyan-3');
+      row.querySelector('.icon-closed')!.classList.add('hidden');
+      row.querySelector('.icon-open')!.classList.remove('hidden');
+      showPreview(row);
+    });
+
+    row.addEventListener('mouseleave', () => {
+      if (isMobile()) return;
+      row.classList.remove('bg-cyan-3');
+      row.querySelector('.icon-closed')!.classList.remove('hidden');
+      row.querySelector('.icon-open')!.classList.add('hidden');
+      hidePreview();
+    });
+  });
+</script>

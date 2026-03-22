@@ -1,17 +1,328 @@
 ---
-// Project detail page — will be driven by content collections once set up.
-// For now redirects to works index with the slug as a query param.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Folder from '../../components/icons/Folder.astro';
+import FolderOpen from '../../components/icons/FolderOpen.astro';
+import { getCollection, render } from 'astro:content';
 import type { GetStaticPaths } from 'astro';
 
-export const getStaticPaths = (() => {
-  // Placeholder — replace with getCollection('projects') when ready
-  const slugs = [
-    'project-one', 'project-two', 'project-three',
-    'project-four', 'project-five', 'project-six', 'project-seven',
-  ];
-  return slugs.map((slug) => ({ params: { slug } }));
+export const getStaticPaths = (async () => {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
 }) satisfies GetStaticPaths;
 
-const { slug } = Astro.params;
-return Astro.redirect(`/works?project=${slug}`);
+const { project } = Astro.props;
+const allProjects = (await getCollection('projects')).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)
+);
+
+const { Content } = await render(project);
 ---
+
+<BaseLayout title={`${project.data.title} — Aymeric Fremont`} noInnerCard>
+  <div class="flex h-full gap-4 p-1">
+
+    <!-- Left column: file explorer (hidden on mobile) -->
+    <div class="hidden md:flex flex-col gap-[2px] p-1 bg-lime-1 border border-frame-stroke w-[459px] shrink-0">
+      <!-- Section label -->
+      <div class="flex items-center px-1 h-6">
+        <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+          / Work Selection - [{allProjects.length}]
+        </span>
+      </div>
+
+      <!-- Project list -->
+      <div class="flex-1 min-h-0 px-[6px] py-[3px] bg-cyan-1 border border-frame-stroke rounded-sm overflow-auto">
+        {allProjects.map((p) => (
+          <a
+            href={`/works/${p.id}`}
+            class:list={[
+              'project-row flex items-center gap-2 py-1 border-b border-border-muted w-full text-left transition-colors h-8',
+              p.id === project.id && 'bg-cyan-3',
+            ]}
+          >
+            <span class:list={['icon-closed shrink-0 text-lime-12', p.id === project.id && 'hidden']}>
+              <Folder />
+            </span>
+            <span class:list={['icon-open shrink-0 text-lime-12', p.id !== project.id && 'hidden']}>
+              <FolderOpen />
+            </span>
+            <span class="text-[16px] leading-6 font-[250] text-lime-12 whitespace-nowrap font-lausanne">
+              {p.data.title}
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Right column: project detail -->
+    <div class="flex flex-col flex-1 min-w-0 gap-[2px] p-1 bg-lime-1 border border-frame-stroke">
+
+      <!-- Section label -->
+      <div class="flex items-center justify-between px-1 h-6">
+        <div class="flex items-center gap-2">
+          <a
+            href="/works"
+            class="md:hidden text-[12px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity"
+          >
+            &larr;
+          </a>
+          <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+            / {project.data.title}
+          </span>
+        </div>
+        <a
+          href="/works"
+          class="text-[12px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity"
+          aria-label="Close project"
+        >
+          &times;
+        </a>
+      </div>
+
+      <!-- Inner card: scrollable content (infinite loop) -->
+      <div id="scroll-loop" class="flex-1 min-h-0 overflow-auto bg-cyan-1 border border-frame-stroke rounded-sm p-3 scroll-hide">
+        <div id="scroll-inner" class="flex flex-col gap-8">
+          <div class="scroll-content flex flex-col gap-8">
+
+        <!-- Title -->
+        <h1 class="text-[48px] leading-[48px] font-[700] text-lime-12 tracking-[-1.5px] font-lausanne">
+          {project.data.title}
+        </h1>
+
+        <!-- Metadata table -->
+        <div class="flex flex-col w-full md:w-[393px] md:self-end">
+          <div class="flex items-center justify-between py-[6px] border-b border-dashed border-lime-11">
+            <span class="text-[14px] leading-6 text-lime-11 font-mono">(YEAR)</span>
+            <span class="text-[14px] leading-6 text-lime-11 font-mono">{project.data.year}</span>
+          </div>
+          <div class="flex items-start justify-between py-[6px] border-b border-dashed border-lime-11">
+            <span class="text-[14px] leading-6 text-lime-11 font-mono shrink-0">(SERVICES)</span>
+            <span class="text-[14px] leading-6 text-lime-11 font-mono text-right">
+              {project.data.services.map((s, i) => (
+                <>{s}{i < project.data.services.length - 1 && <br />}</>
+              ))}
+            </span>
+          </div>
+        </div>
+
+        {project.data.sections ? (
+          <!-- Case study layout -->
+          <div class="flex flex-col gap-8">
+            {project.data.sections.map((section, i) => {
+              const sections = project.data.sections!;
+              const isLast = i === sections.length - 1;
+              return (
+                <>
+                  {/* Insert closing image + tools paragraph before the last section */}
+                  {isLast && project.data.closingImage && (
+                    <>
+                      <div class="case-image relative w-full bg-white overflow-hidden shrink-0">
+                        <img
+                          src={project.data.closingImage.bg}
+                          alt=""
+                          class="absolute inset-0 w-full h-full object-cover blur-[2px]"
+                        />
+                        <img
+                          src={project.data.closingImage.fg}
+                          alt=""
+                          class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2/3 object-contain"
+                        />
+                      </div>
+                      <div class="flex flex-col gap-8">
+                        <div class="flex flex-col md:flex-row gap-5 px-2 md:px-[80px]">
+                          <div class="flex-1"></div>
+                          <div class="flex-1 text-[16px] leading-6 font-[250] text-lime-11 font-lausanne whitespace-pre-line">
+                            <Content />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Composed image: blurred bg + sharp fg */}
+                  {section.image ? (
+                    <div class="case-image relative w-full bg-white overflow-hidden shrink-0">
+                      <img
+                        src={section.image.bg}
+                        alt=""
+                        class="absolute inset-0 w-full h-full object-cover blur-[2px]"
+                      />
+                      {section.image.variant === 'phones' ? (
+                        <div class="absolute inset-0">
+                          <img
+                            src={section.image.fg}
+                            alt={section.heading}
+                            class="absolute object-cover"
+                            style="width: 33.3%; height: 135%; left: 13.1%; top: 25.2%;"
+                          />
+                          <img
+                            src={section.image.fg}
+                            alt={section.heading}
+                            class="absolute object-cover"
+                            style="width: 33.3%; height: 135%; left: 53.5%; top: -60.3%;"
+                          />
+                        </div>
+                      ) : (
+                        <img
+                          src={section.image.fg}
+                          alt={section.heading}
+                          class:list={[
+                            'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 object-contain',
+                            section.image.variant === 'wide' ? 'w-[79%]' : 'w-2/3',
+                          ]}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div class="case-image w-full bg-placeholder shrink-0 overflow-hidden"></div>
+                  )}
+
+                  {/* Section content */}
+                  <div class="flex flex-col gap-8">
+                    {section.type === 'brief' ? (
+                      <>
+                        <div class="px-2 md:px-[144px]">
+                          <p class="text-[24px] leading-[27px] font-[350] text-lime-11 font-lausanne">
+                            {section.heading}
+                          </p>
+                        </div>
+                        <div class="px-2 md:px-[144px]">
+                          <p class="text-[24px] leading-[27px] font-[250] text-lime-11 font-lausanne">
+                            {section.content}
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div class="px-2 md:px-[80px]">
+                          <p class="text-[24px] leading-[27px] font-[350] text-lime-10 font-lausanne">
+                            {section.heading}
+                          </p>
+                        </div>
+                        <div class="flex flex-col md:flex-row gap-5 px-2 md:px-[80px]">
+                          <p class="flex-1 text-[16px] leading-6 font-[250] text-lime-10 font-lausanne">
+                            {section.highlight}
+                          </p>
+                          <div class="flex-1 text-[16px] leading-6 font-[250] text-lime-11 font-lausanne whitespace-pre-line">
+                            {section.detail}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                  </div>
+                </>
+              );
+            })}
+          </div>
+        ) : (
+          <!-- Fallback: simple layout for projects without sections -->
+          <>
+            <!-- Cover image -->
+            {project.data.coverImage ? (
+              <img
+                src={project.data.coverImage}
+                alt={project.data.title}
+                class="w-full rounded-sm shrink-0 object-cover"
+                style="height: 624px;"
+              />
+            ) : (
+              <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 624px;"></div>
+            )}
+
+            <p class="text-[24px] leading-[27px] font-[350] text-lime-11 font-lausanne">About</p>
+
+            <div class="px-2 md:px-0 pb-6" style="--indent: 144px;">
+              <div class="md:pl-[var(--indent)] text-lime-11 font-lausanne prose-project">
+                <Content />
+              </div>
+            </div>
+
+            {project.data.secondaryImage ? (
+              <img
+                src={project.data.secondaryImage}
+                alt={`${project.data.title} — detail`}
+                class="w-full rounded-sm shrink-0 object-cover"
+                style="height: 326px;"
+              />
+            ) : (
+              <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 326px;"></div>
+            )}
+          </>
+        )}
+
+          </div><!-- .scroll-content -->
+        </div><!-- #scroll-inner -->
+      </div>
+    </div>
+
+  </div>
+</BaseLayout>
+
+<script>
+  const container = document.getElementById('scroll-loop');
+  const inner = document.getElementById('scroll-inner');
+  const content = inner?.querySelector('.scroll-content');
+
+  if (container && inner && content) {
+    // Clone content for seamless loop
+    const clone = content.cloneNode(true) as HTMLElement;
+    clone.setAttribute('aria-hidden', 'true');
+    inner.appendChild(clone);
+
+    const gap = 32; // gap-8 = 32px
+    let ticking = false;
+
+    container.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const resetPoint = content.offsetHeight + gap;
+          if (container.scrollTop >= resetPoint) {
+            container.scrollTop -= resetPoint;
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+  }
+</script>
+
+<style is:global>
+  .scroll-hide {
+    scrollbar-width: none;
+  }
+  .scroll-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .project-row:hover {
+    background-color: var(--color-cyan-3);
+  }
+  .project-row:hover .icon-closed {
+    display: none;
+  }
+  .project-row:hover .icon-open {
+    display: inline-flex !important;
+  }
+
+  .case-image {
+    aspect-ratio: 901 / 675.75;
+  }
+
+  .prose-project p {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 250;
+  }
+
+  @media (min-width: 768px) {
+    .prose-project p {
+      font-size: 24px;
+      line-height: 27px;
+    }
+  }
+</style>

@@ -1,16 +1,36 @@
 ---
 import '../styles/global.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/ibm-plex-mono/700.css';
 import Header from '../components/Header.astro';
 
 interface Props {
   title?: string;
   description?: string;
+  noInnerCard?: boolean;
 }
 
 const {
   title = 'Aymeric Fremont — Designer',
   description = 'UX/UI designer and aspiring entrepreneur based in Nantes, France.',
+  noInnerCard = false,
 } = Astro.props;
+
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { label: 'Home',  href: '/' },
+  { label: 'Works', href: '/works' },
+  { label: 'Lab',   href: '/lab' },
+  { label: 'About', href: '/about' },
+];
+
+const socials = [
+  { label: 'Email',     href: 'mailto:hello@aymericfremont.com' },
+  { label: 'Instagram', href: 'https://instagram.com/' },
+  { label: 'Linkedin',  href: 'https://linkedin.com/in/' },
+];
 ---
 
 <html lang="en">
@@ -20,20 +40,83 @@ const {
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" href="/fonts/TWKLausanne-400.woff2" as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
   </head>
 
-  <body class="bg-lime-1 text-lime-12">
+  <body class="bg-gray-1 text-lime-12">
     <!-- Outer container: 16px page padding on desktop, 8px on mobile -->
-    <div class="flex flex-col h-screen p-2 md:p-4 gap-2 md:gap-4">
+    <div class="relative flex flex-col h-screen p-2 md:p-4 gap-2 md:gap-4">
       <Header />
 
-      <!-- Main content panel: outer (lime-1 bg) → inner (cyan-1 bg) -->
-      <main class="flex-1 min-h-0 bg-lime-1 border border-frame-stroke p-1">
-        <div class="bg-cyan-1 border border-frame-stroke rounded-sm h-full overflow-auto">
-          <slot />
+      <!--
+        Mobile menu overlay — absolutely positioned to cover the main content area.
+        On mobile: top = 8px padding + 36px header + 8px gap = 52px
+        Sides and bottom = 8px (matching p-2 page padding)
+        Hidden on desktop via md:hidden.
+      -->
+      <div
+        id="mobile-menu"
+        class="md:hidden absolute z-50 flex flex-col"
+        style="display: none; top: 52px; left: 8px; right: 8px; bottom: 8px;"
+      >
+        <!-- Outer frame: lime-1 bg + border (mirrors main frame) -->
+        <div class="flex flex-col flex-1 min-h-0 bg-lime-1 border border-frame-stroke p-1">
+          <!-- Inner frame: dark teal (cyan-12) -->
+          <div class="flex flex-col flex-1 min-h-0 bg-cyan-12 border border-frame-stroke rounded-sm px-2 py-5">
+
+            <!-- Nav links: top-left, vertical stack -->
+            <nav class="flex flex-col gap-2 px-3">
+              {navLinks.map((link) => (
+                <a
+                  href={link.href}
+                  class="flex items-center min-h-[36px] px-2 py-0.5 rounded-lg text-[16px] leading-6 font-[350] text-lime-1 font-lausanne"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+
+            <!-- Socials: bottom-center -->
+            <div class="flex-1 flex items-end justify-center">
+              <div class="flex items-center">
+                {socials.map((social, i) => (<><a
+                    href={social.href}
+                    class="flex items-center min-h-[36px] pl-1 py-0.5 text-[16px] leading-6 font-[350] text-lime-1 font-lausanne"
+                    target={social.href.startsWith('http') ? '_blank' : undefined}
+                    rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  >{social.label}</a>{i < socials.length - 1 && <span class="text-[16px] leading-6 text-lime-1 font-lausanne">,</span>}</>))}
+              </div>
+            </div>
+
+          </div>
         </div>
+      </div>
+
+      <!-- Main content panel: outer (lime-1 bg) → inner (cyan-1 bg) -->
+      <main class={`flex-1 min-h-0 ${noInnerCard ? '' : 'bg-lime-1 border border-frame-stroke p-1'}`}>
+        {noInnerCard ? (
+          <slot />
+        ) : (
+          <div class="bg-cyan-1 border border-frame-stroke rounded-sm h-full overflow-auto">
+            <slot />
+          </div>
+        )}
       </main>
     </div>
+
+    <script>
+      const menuBtn    = document.getElementById('mobile-menu-btn');
+      const overlay    = document.getElementById('mobile-menu');
+      const btnText    = document.getElementById('menu-btn-text');
+
+      if (menuBtn && overlay && btnText) {
+        menuBtn.addEventListener('click', () => {
+          const isOpen = overlay.style.display === 'flex';
+          overlay.style.display = isOpen ? 'none' : 'flex';
+          btnText.textContent   = isOpen ? 'Open Menu' : 'Close Menu';
+        });
+      }
+    </script>
   </body>
 </html>

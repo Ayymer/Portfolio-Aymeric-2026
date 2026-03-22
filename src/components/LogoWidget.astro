@@ -1,0 +1,156 @@
+---
+// LogoWidget — toggles between expanded (banner) and minimized (monogram) states.
+// Draggable in both states. Position persists across toggles.
+---
+
+<div
+  id="logo-widget"
+  style="position: absolute; left: 96px; right: 96px; bottom: 20px; border: 1.61px solid var(--color-frame-stroke); background: var(--color-lime-1); display: flex; flex-direction: column; gap: 6.44px; padding: 6.44px;"
+>
+  <!-- Title bar — drag handle for both states -->
+  <div
+    id="widget-titlebar"
+    style="display: flex; align-items: center; justify-content: space-between; user-select: none; touch-action: none; cursor: grab;"
+  >
+    <span style="font-family: var(--font-mono); font-size: 16px; line-height: 24px; color: var(--color-lime-12);">
+      Hello World!
+    </span>
+    <button
+      id="widget-toggle"
+      aria-label="Toggle widget"
+      style="display: flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; color: var(--color-lime-12); transition: opacity 0.15s;"
+    >
+      <svg id="icon-minus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"/>
+      </svg>
+      <svg id="icon-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: none;">
+        <path d="M5 12h14"/>
+        <path d="M12 5v14"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Expanded: full logo banner -->
+  <div
+    id="widget-expanded"
+    style="background: var(--color-cyan-1); border: 1.61px solid var(--color-frame-stroke); border-radius: 1.61px; display: flex; align-items: center; justify-content: center; padding: 40px 30px 30px;"
+  >
+    <img src="/Logo_Banner.svg" alt="Aymeric Fremont" style="width: 100%; max-height: 100px; object-fit: contain;" />
+  </div>
+
+  <!-- Minimized: AF monogram -->
+  <div
+    id="widget-minimized"
+    style="display: none; border: 1.61px solid var(--color-frame-stroke); border-radius: 1.61px; width: 192px; height: 155px; position: relative; overflow: hidden;"
+  >
+    <img src="/Logo_Small.svg" alt="AF" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 20px;" />
+  </div>
+</div>
+
+<style>
+  #widget-toggle:hover {
+    opacity: 0.5;
+  }
+</style>
+
+<script>
+  const widget      = document.getElementById('logo-widget')!;
+  const titlebar    = document.getElementById('widget-titlebar')!;
+  const toggleBtn   = document.getElementById('widget-toggle')!;
+  const iconMinus   = document.getElementById('icon-minus')!;
+  const iconPlus    = document.getElementById('icon-plus')!;
+  const expandedEl  = document.getElementById('widget-expanded')!;
+  const minimizedEl = document.getElementById('widget-minimized')!;
+
+  let isMinimized = false;
+  let isDragging  = false;
+  let mouseStartX = 0;
+  let mouseStartY = 0;
+  let startLeft   = 0;
+  let startTop    = 0;
+  let expandedW   = 0; // captured on first minimize or first drag
+
+  const MINIMIZED_W = 192 + 2 * 6.44 + 2 * 1.61; // ≈ 208px
+
+  // Convert from CSS layout (right/bottom) to absolute left/top/width,
+  // reading the actual rendered position via getBoundingClientRect so
+  // it's always correct regardless of what CSS properties are set.
+  function ensureAbsolutePosition() {
+    const parent = widget.parentElement!;
+    const pRect  = parent.getBoundingClientRect();
+    const rect   = widget.getBoundingClientRect();
+    const w      = widget.offsetWidth;
+
+    // Capture expanded width before any state change
+    if (expandedW === 0 && !isMinimized) expandedW = w;
+
+    widget.style.left   = `${rect.left - pRect.left}px`;
+    widget.style.top    = `${rect.top  - pRect.top}px`;
+    widget.style.width  = `${w}px`;
+    widget.style.right  = 'auto';
+    widget.style.bottom = 'auto';
+  }
+
+  // ── Toggle — only swaps content and width, never resets left/top ─
+  toggleBtn.addEventListener('click', () => {
+    isMinimized ? expand() : minimize();
+  });
+
+  function minimize() {
+    // Bake current position before changing layout
+    ensureAbsolutePosition();
+    // expandedW is now captured ↑
+
+    isMinimized = true;
+    expandedEl.style.display  = 'none';
+    minimizedEl.style.display = 'block';
+    iconMinus.style.display   = 'none';
+    iconPlus.style.display    = 'block';
+    widget.style.width        = `${MINIMIZED_W}px`;
+  }
+
+  function expand() {
+    isMinimized = false;
+    expandedEl.style.display  = 'flex';
+    minimizedEl.style.display = 'none';
+    iconMinus.style.display   = 'block';
+    iconPlus.style.display    = 'none';
+    widget.style.width        = `${expandedW}px`;
+  }
+
+  // ── Drag — works in both states ──────────────────────────
+  titlebar.addEventListener('mousedown', (e) => {
+    if ((e.target as HTMLElement).closest('#widget-toggle')) return;
+
+    // Always read actual rendered position — avoids NaN from unset style.top
+    ensureAbsolutePosition();
+
+    isDragging  = true;
+    mouseStartX = e.clientX;
+    mouseStartY = e.clientY;
+    startLeft   = parseFloat(widget.style.left);
+    startTop    = parseFloat(widget.style.top);
+
+    titlebar.style.cursor          = 'grabbing';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+
+    const parent  = widget.parentElement!;
+    const maxLeft = parent.offsetWidth  - widget.offsetWidth;
+    const maxTop  = parent.offsetHeight - widget.offsetHeight;
+
+    widget.style.left = `${Math.max(0, Math.min(maxLeft, startLeft + (e.clientX - mouseStartX)))}px`;
+    widget.style.top  = `${Math.max(0, Math.min(maxTop,  startTop  + (e.clientY - mouseStartY)))}px`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    titlebar.style.cursor          = 'grab';
+    document.body.style.userSelect = '';
+  });
+
+</script>
