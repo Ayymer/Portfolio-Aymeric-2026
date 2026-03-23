@@ -13,9 +13,13 @@ const projects = defineCollection({
       }),
       z.object({
         type: z.literal('two-column'),
-        heading: z.string(),
-        highlight: z.string(),
+        heading: z.string().optional(),
+        highlight: z.string().optional(),
         detail: z.string(),
+        image: image().optional(),
+      }),
+      z.object({
+        type: z.literal('image-only'),
         image: image().optional(),
       }),
     ]);

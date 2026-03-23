@@ -8,5 +8,5 @@ export const navLinks = [
 export const socials = [
   { label: 'Linkedin',  href: 'https://www.linkedin.com/in/aymericfremont/' },
   { label: 'Instagram', href: 'https://www.instagram.com/aymericfremont/' },
-  { label: 'contact@aymericfremont.com', href: 'mailto:contact@aymericfremont.com' },
+  { label: 'Email', href: 'mailto:contact@aymericfremont.com' },
 ];

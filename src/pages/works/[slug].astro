@@ -109,13 +109,13 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
                     </>
                   )}
 
-                  <CaseImage src={section.image} alt={section.heading} />
+                  <CaseImage src={section.image} alt={section.type === 'image-only' ? project.data.title : section.heading} />
 
                   {section.type === 'brief' ? (
                     <BriefSection heading={section.heading} content={section.content} />
-                  ) : (
+                  ) : section.type === 'two-column' ? (
                     <TwoColumnSection heading={section.heading} highlight={section.highlight} detail={section.detail} />
-                  )}
+                  ) : null /* image-only */}
                 </>
               );
             })}
