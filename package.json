@@ -1,7 +1,7 @@
 {
   "name": "portfolio-aymeric-2026",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "engines": {
     "node": ">=22.12.0"
   },
