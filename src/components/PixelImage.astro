@@ -10,7 +10,13 @@ interface Props {
   class?: string;
 }
 
-const { src, alt = '', width, height, class: className = '' } = Astro.props;
+const {
+  src,
+  alt = '',
+  width = src.width,
+  height = src.height,
+  class: className = '',
+} = Astro.props;
 ---
 
 <span class="pixel-image-wrap relative block">
@@ -32,7 +38,15 @@ const { src, alt = '', width, height, class: className = '' } = Astro.props;
   const FRAME_MS    = 80;
   const MAX_SIZE    = 128;
 
+  function prefersReducedMotion(): boolean {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   function runPixelAnimation(img: HTMLImageElement): void {
+    if (prefersReducedMotion()) {
+      img.classList.remove('opacity-0');
+      return;
+    }
     const wrap = img.parentElement as HTMLElement;
 
     // Size canvas at capped intrinsic resolution for perf.

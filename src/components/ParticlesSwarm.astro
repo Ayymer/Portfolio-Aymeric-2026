@@ -118,7 +118,8 @@ class ParticlesSwarm {
         });
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
         this.renderer.setSize(w, h);
-        this.renderer.setClearColor(0xf9fdfe, 1);
+        const clearCss = getComputedStyle(document.documentElement).getPropertyValue('--color-cyan-1').trim();
+        this.renderer.setClearColor(new THREE.Color(clearCss || '#f9fdfe'), 1);
         const canvas = this.renderer.domElement;
         canvas.style.position = 'absolute';
         canvas.style.inset = '0';
@@ -444,6 +445,15 @@ class ParticlesSwarm {
 const container = document.getElementById('swarm-container') as HTMLElement;
 if (!container) throw new Error('swarm-container not found');
 
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reducedMotion) {
+    const root = getComputedStyle(document.documentElement);
+    const bg = root.getPropertyValue('--color-cyan-1').trim();
+    container.replaceChildren();
+    const fallback = document.createElement('div');
+    fallback.style.cssText = `position:absolute;inset:0;background-color:${bg};`;
+    container.appendChild(fallback);
+} else {
 const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
 const isReload = navEntry?.type === 'reload';
 const isHomepage = window.location.pathname === '/' || window.location.pathname === '';
@@ -453,6 +463,12 @@ const isFirstHomepageVisit = isHomepage && navEntry?.type === 'navigate' && !has
 const swarm = new ParticlesSwarm(container, 20000, isReload || isFirstHomepageVisit);
 // Recreate textures once IBM Plex Mono is confirmed loaded
 document.fonts.ready.then(() => swarm.refreshTextures());
+
+const rootStyle = getComputedStyle(document.documentElement);
+const cLime1 = rootStyle.getPropertyValue('--color-lime-1').trim();
+const cFrame = rootStyle.getPropertyValue('--color-frame-stroke').trim();
+const cLime12 = rootStyle.getPropertyValue('--color-lime-12').trim();
+const cLime11 = rootStyle.getPropertyValue('--color-lime-11').trim();
 
 // ─── Debug Panel (toggle with Shift+D) ───────────────────────────────────────
 
@@ -469,21 +485,21 @@ const CONTROLS: { key: keyof SwarmParams; label: string; min: number; max: numbe
 
 const panel = document.createElement('div');
 panel.id = 'swarm-debug';
-panel.style.cssText = `
-    display: none;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 9999;
-    background: #fbfefa;
-    border: 1px solid rgba(39,63,28,0.7);
-    padding: 12px 14px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    color: #273f1c;
-    min-width: 240px;
-    user-select: none;
-`;
+panel.style.cssText = [
+    'display: none',
+    'position: fixed',
+    'bottom: 20px',
+    'right: 20px',
+    'z-index: 9999',
+    `background: ${cLime1}`,
+    `border: 1px solid ${cFrame}`,
+    'padding: 12px 14px',
+    "font-family: 'IBM Plex Mono', monospace",
+    'font-size: 11px',
+    `color: ${cLime12}`,
+    'min-width: 240px',
+    'user-select: none',
+].join(';') + ';';
 
 const title = document.createElement('div');
 title.textContent = 'swarm debug — Shift+D to close';
@@ -508,7 +524,7 @@ for (const ctrl of CONTROLS) {
     slider.step = String(ctrl.step);
     slider.value = String(swarm.params[ctrl.key]);
     slider.dataset.key = ctrl.key;
-    slider.style.cssText = 'flex: 1; accent-color: #3b8021;';
+    slider.style.cssText = `flex: 1; accent-color: ${cLime11};`;
     sliderEls.set(ctrl.key, slider);
 
     const val = document.createElement('span');
@@ -531,17 +547,18 @@ for (const ctrl of CONTROLS) {
 
 const btn = document.createElement('button');
 btn.textContent = 'copy json';
-btn.style.cssText = `
-    margin-top: 8px;
-    width: 100%;
-    padding: 4px 0;
-    background: transparent;
-    border: 1px solid rgba(39,63,28,0.7);
-    color: #273f1c;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    cursor: pointer;
-`;
+btn.type = 'button';
+btn.style.cssText = [
+    'margin-top: 8px',
+    'width: 100%',
+    'padding: 4px 0',
+    'background: transparent',
+    `border: 1px solid ${cFrame}`,
+    `color: ${cLime12}`,
+    "font-family: 'IBM Plex Mono', monospace",
+    'font-size: 11px',
+    'cursor: pointer',
+].join(';') + ';';
 btn.addEventListener('click', () => {
     navigator.clipboard.writeText(JSON.stringify(swarm.params, null, 2));
     btn.textContent = 'copied!';
@@ -560,4 +577,5 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+}
 </script>

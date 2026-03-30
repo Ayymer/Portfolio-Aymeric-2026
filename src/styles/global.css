@@ -14,13 +14,13 @@
   --color-cyan-3:  #ddf7f8;
   --color-cyan-12: #043b45;
 
-  /* Gray scale */
+  /* Gray scale (legacy / optional) */
   --color-gray-1: #fdfdfd;
 
-  /* Neutrals */
+  /* Neutrals — match DESIGN_SYSTEM.md */
   --color-ghost:            rgba(255, 255, 255, 0);
-  --color-ghost-fg:         #273f1c;
-  --color-border-muted:     rgba(39, 63, 28, 0.4);
+  --color-ghost-fg:         #404040;
+  --color-border-muted:     #737373;
   --color-frame-stroke:     rgba(39, 63, 28, 0.7);
   --color-placeholder:      #d9d9d9;
 
@@ -60,7 +60,7 @@
 
 /* ─── Tangerine @font-face ──────────────────────────────────── */
 
-@font-face { font-family: 'Tangerine'; src: url('/fonts/Tangerine-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: block; }
+@font-face { font-family: 'Tangerine'; src: url('/fonts/Tangerine-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
 
 /* ─── TWK Lausanne @font-face declarations ─────────────────── */
 
@@ -72,7 +72,7 @@
 /* ─── Base styles ──────────────────────────────────────────── */
 @layer base {
   html {
-    background-color: var(--color-gray-1);
+    background-color: var(--color-lime-1);
     color: var(--color-lime-12);
     font-family: var(--font-lausanne);
     font-weight: var(--font-weight-regular);
@@ -82,11 +82,59 @@
   body {
     min-height: 100vh;
   }
+
+  /* Mobile menu overlay geometry: page padding (xs) + header + column gap (xs) */
+  :root {
+    --layout-mobile-menu-top: calc(
+      var(--spacing-nav-h) + var(--spacing-xs) + var(--spacing-xs)
+    );
+    --layout-mobile-menu-inset: var(--spacing-xs);
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  #main-content:focus-visible {
+    outline: 2px solid var(--color-lime-11);
+    outline-offset: 2px;
+  }
+
+  a,
+  button {
+    touch-action: manipulation;
+  }
 }
 
 @layer utilities {
   .rendering-pixelated {
     image-rendering: pixelated;
     image-rendering: crisp-edges; /* Safari */
+  }
+
+  .skip-link {
+    position: absolute;
+    left: var(--spacing-xs);
+    top: var(--spacing-xs);
+    z-index: 10000;
+    padding: var(--spacing-2xs) var(--spacing-sm);
+    background-color: var(--color-lime-1);
+    color: var(--color-lime-12);
+    border: 1px solid var(--color-frame-stroke);
+    border-radius: var(--radius-lg);
+    font-size: 16px;
+    line-height: 24px;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .skip-link:focus-visible {
+    clip: auto;
+    clip-path: none;
+    width: auto;
+    height: auto;
+    overflow: visible;
   }
 }

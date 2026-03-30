@@ -1,0 +1,45 @@
+---
+// src/components/TwinkleMask.astro
+interface Props {
+  maskUrl: string;
+  maskSize?: string;
+  maskPosition?: string;
+  dotColor?: string;
+  density?: number;
+}
+
+const {
+  maskUrl,
+  maskSize = '100%',
+  maskPosition = 'center',
+  dotColor,
+  density = 5,
+} = Astro.props;
+
+const fillStyle = dotColor
+  ? `--twinkle-fill: ${dotColor};`
+  : `--twinkle-fill: var(--color-cyan-12);`;
+---
+
+<div
+  class="twinkle-container group relative w-full h-full overflow-hidden"
+  style={fillStyle}
+  {...(dotColor ? { 'data-color': dotColor } : {})}
+  data-density={density}
+>
+  <canvas
+    class="twinkle-grid absolute inset-0 w-full h-full opacity-25 pointer-events-none"
+  ></canvas>
+
+  <canvas
+    class="twinkle-element absolute inset-0 w-full h-full pointer-events-none"
+    style={`mask-image: url('${maskUrl}'); mask-size: ${maskSize}; mask-position: ${maskPosition}; mask-repeat: no-repeat; -webkit-mask-image: url('${maskUrl}'); -webkit-mask-size: ${maskSize}; -webkit-mask-position: ${maskPosition}; -webkit-mask-repeat: no-repeat;`}
+  ></canvas>
+</div>
+
+<script>
+  import { initTwinkleMasks } from '../scripts/twinkleMask.ts';
+
+  initTwinkleMasks();
+  document.addEventListener('astro:page-load', initTwinkleMasks);
+</script>

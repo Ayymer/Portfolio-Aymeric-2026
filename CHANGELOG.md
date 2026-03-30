@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.0.3] — 2026-03-30
+
+### Added
+
+- **About** — `HalftoneDotsImage` (paper halftone WebGL) and `TwinkleMask` block with mask asset under `public/masks/`; new imagery in `src/assets/about/` (lily, portrait).
+- **Accessibility & shell** — Skip link to `#main-content`, `theme-color` matching page background, `main` landmark id, mobile menu `aria-expanded` / `aria-controls`, global `:focus-visible` outlines and `touch-action: manipulation` on links and buttons.
+- **Motion** — `prefers-reduced-motion` respected for the loader, hover text shuffle, `PixelImage` reveal, halftone hosts, twinkle canvas, homepage particles (static cyan fallback), and the works case-study infinite scroll; `motion-reduce:` on key CSS transitions.
+- **Config** — `site` in `astro.config.mjs` for canonical and Open Graph URLs.
+
+### Changed
+
+- **Design tokens** — Ghost foreground and border-muted aligned with `DESIGN_SYSTEM.md`; HTML/body background uses lime-1; Tangerine uses `font-display: swap`.
+- **Header** — Current route is a focusable link with `aria-current="page"`; IBM Plex Mono import limited to weight 400.
+- **Works** — Listing preview `<img>` with explicit dimensions and lazy loading; mono section labels at 14px; long project names truncate; case-study title uses Lausanne book (300) with `text-balance`.
+- **Particles / debug UI** — Clear color and dev panel chrome read from CSS custom properties instead of hardcoded hex.
+- **Halftone shader colors** — Derived from document tokens via `getComputedStyle` where applicable.
+
+### Removed
+
+- `HalftonePortrait.astro` and `public/about-background.png` (superseded by the new about visuals).
+
 ## [1.0.2] — 2026-03-30
 
 ### Added

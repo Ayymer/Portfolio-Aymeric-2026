@@ -4,7 +4,7 @@ import { navLinks, socials } from '../data/navigation';
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="flex items-center justify-between shrink-0 w-full" class="h-nav-h">
+<header class="flex items-center justify-between shrink-0 w-full h-nav-h">
   <!-- Navbar: logo + nav links (nav links hidden on mobile) -->
   <nav class="flex items-center">
     <!-- Logo: always visible -->
@@ -16,16 +16,20 @@ const currentPath = Astro.url.pathname;
       const isActive = currentPath === link.href ||
         (link.href !== '/' && currentPath.startsWith(link.href));
       return isActive ? (
-        <span
+        <a
+          href={link.href}
+          aria-current="page"
           data-hover-shuffle
-          class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-lime-12"        >
+          class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-lime-12"
+        >
           {link.label}
-        </span>
+        </a>
       ) : (
         <a
           href={link.href}
           data-hover-shuffle
-          class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular opacity-50 hover:opacity-100 transition-opacity text-ghost-fg"        >
+          class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular opacity-50 hover:opacity-100 transition-opacity motion-reduce:transition-none text-ghost-fg"
+        >
           {link.label}
         </a>
       );
@@ -39,7 +43,8 @@ const currentPath = Astro.url.pathname;
       {socials.map((social, i) => (<><a
           href={social.href}
           data-hover-shuffle
-          class="flex items-center justify-center min-h-nav-h pl-1 py-0.5 text-[16px] leading-6 font-regular text-ghost-fg hover:opacity-50 transition-opacity"          target={social.href.startsWith('http') ? '_blank' : undefined}
+          class="flex items-center justify-center min-h-nav-h pl-1 py-0.5 text-[16px] leading-6 font-regular text-ghost-fg hover:opacity-50 transition-opacity motion-reduce:transition-none"
+          target={social.href.startsWith('http') ? '_blank' : undefined}
           rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
         >{social.label}</a>{i < socials.length - 1 && <span class="text-[16px] leading-6 text-ghost-fg">,</span>}</>))}
     </div>
@@ -47,9 +52,10 @@ const currentPath = Astro.url.pathname;
     <!-- Mobile menu button: mobile only -->
     <button
       id="mobile-menu-btn"
-      class="flex md:hidden items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-ghost-fg"
-      style="background: none; border: none; cursor: pointer;"
-      aria-label="Toggle menu"
+      type="button"
+      class="flex md:hidden items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-ghost-fg bg-transparent border-0 cursor-pointer"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
     >
       <span id="menu-btn-text" data-hover-shuffle>Open Menu</span>
     </button>

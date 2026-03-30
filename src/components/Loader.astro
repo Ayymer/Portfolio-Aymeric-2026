@@ -10,7 +10,7 @@
         position: fixed;
         inset: 0;
         z-index: 9999;
-        background-color: #fbfefa;
+        background-color: var(--color-lime-1);
         align-items: center;
         justify-content: center;
         pointer-events: all;
@@ -21,7 +21,7 @@
         font-size: 48px;
         letter-spacing: 0.02em;
         text-transform: uppercase;
-        color: #273f1c;
+        color: var(--color-lime-12);
         display: inline-block;
         opacity: 0;
         will-change: opacity;
@@ -52,6 +52,14 @@
             isHomepage && navType === "navigate" && !hasSameOriginReferrer;
 
         if (!isReload && !isFirstHomepageVisit) {
+            loader.remove();
+            return;
+        }
+
+        const reducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+        ).matches;
+        if (reducedMotion) {
             loader.remove();
             return;
         }

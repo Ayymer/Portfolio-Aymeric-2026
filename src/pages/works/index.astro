@@ -9,6 +9,7 @@ const projects = (await getCollection('projects')).sort(
 ---
 
 <BaseLayout title="Works — Aymeric Fremont" noInnerCard>
+  <h1 class="sr-only">Works</h1>
   <div class="flex h-full gap-4 p-1">
 
     <!-- Left column: full width on mobile, fixed 459px on desktop -->
@@ -22,7 +23,7 @@ const projects = (await getCollection('projects')).sort(
 
       <!-- Section label -->
       <div id="right-label" class="items-center h-6 hidden">
-        <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+        <span class="text-[14px] leading-6 text-lime-12 whitespace-nowrap font-mono">
           / <span id="right-title"></span>
         </span>
       </div>
@@ -31,7 +32,16 @@ const projects = (await getCollection('projects')).sort(
       <!-- Hover preview -->
       <div id="right-preview" class="hidden flex-1 min-h-0 items-center justify-center bg-cyan-1 border border-frame-stroke rounded-sm overflow-hidden">
         <span id="preview-wrap" class="relative block" style="width: 60%; aspect-ratio: 901/675.75;">
-          <img id="preview-thumb" alt="" class="object-contain w-full h-full" style="opacity: 0;" />
+          <img
+            id="preview-thumb"
+            width="902"
+            height="676"
+            loading="lazy"
+            decoding="async"
+            alt=""
+            class="object-contain w-full h-full"
+            style="opacity: 0;"
+          />
         </span>
       </div>
 
@@ -56,6 +66,10 @@ const projects = (await getCollection('projects')).sort(
   let animId        = 0;
 
   function runPixelAnimation(img: HTMLImageElement, wrap: HTMLElement): void {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      img.style.opacity = '1';
+      return;
+    }
     const id = ++animId;
     wrap.querySelector('canvas')?.remove();
 

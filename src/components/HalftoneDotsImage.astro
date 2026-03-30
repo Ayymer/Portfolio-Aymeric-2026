@@ -1,0 +1,52 @@
+---
+/**
+ * Paper halftone-dots (WebGL) — raw photo from import URL, no astro:assets <Image /> pipeline.
+ */
+interface Props {
+  src: string;
+  imgWidth: number;
+  imgHeight: number;
+  originalColors: boolean;
+  alt: string;
+  class?: string;
+  /** Halftone grid density 0–1 (Paper `size`) */
+  dotSize?: number;
+  /** Luminance contrast 0–1 */
+  contrast?: number;
+  /** Grain scale 0–1 */
+  grainSize?: number;
+  /** Shader fit inside the canvas */
+  fit?: 'cover' | 'contain';
+}
+
+const {
+  src,
+  imgWidth,
+  imgHeight,
+  originalColors,
+  alt,
+  class: className = '',
+  dotSize = 0.65,
+  contrast = 0.01,
+  grainSize = 0.5,
+  fit = 'cover',
+} = Astro.props;
+---
+
+<figure class:list={['w-full', className]}>
+  <div
+    class="w-full overflow-hidden rounded-sm"
+    data-halftone-dots-host
+    data-image-src={src}
+    data-original-colors={originalColors ? 'true' : 'false'}
+    data-halftone-size={String(dotSize)}
+    data-halftone-contrast={String(contrast)}
+    data-halftone-grain-size={String(grainSize)}
+    data-halftone-fit={fit}
+    data-min-pixel-ratio="2"
+    style={`aspect-ratio: ${imgWidth} / ${imgHeight};`}
+    aria-hidden="true"
+  >
+  </div>
+  <figcaption class="sr-only">{alt}</figcaption>
+</figure>

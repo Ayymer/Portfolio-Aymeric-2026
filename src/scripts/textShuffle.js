@@ -60,10 +60,16 @@ const scrambleElement = (el, algorithm, iterations, duration) => {
     }, interval);
 };
 
+function prefersReducedMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 /**
  * Binds hover shuffle on `[data-hover-shuffle]` and `[data-hover-shuffle="children"]`.
  */
 export const initTextShuffle = () => {
+    if (prefersReducedMotion()) return;
+
     // Locomotive-style: 4 iterations over 250ms
     const hoverElements = document.querySelectorAll("[data-hover-shuffle]");
 

@@ -1,8 +1,6 @@
 ---
 import "../styles/global.css";
 import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/500.css";
-import "@fontsource/ibm-plex-mono/700.css";
 import Header from "../components/Header.astro";
 import Loader from "../components/Loader.astro";
 import { navLinks, socials } from "../data/navigation";
@@ -29,13 +27,13 @@ const ogImageURL = ogImage
     ? new URL(ogImage, Astro.site ?? "https://aymericfremont.com").href
     : undefined;
 
-const currentPath = Astro.url.pathname;
 ---
 
 <html lang="en">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#fbfefa" />
         <meta name="generator" content={Astro.generator} />
         <meta name="description" content={description} />
         <link rel="canonical" href={canonicalURL} />
@@ -76,23 +74,20 @@ const currentPath = Astro.url.pathname;
             data-website-id="c78092f2-77fd-4462-a428-be1ae7ede712"></script>
     </head>
 
-    <body class="bg-gray-1 text-lime-12">
+    <body class="bg-lime-1 text-lime-12">
         <Loader />
+
+        <a class="skip-link" href="#main-content">Skip to content</a>
 
         <!-- Outer container: 16px page padding on desktop, 8px on mobile -->
         <div class="relative flex flex-col h-screen p-2 md:p-4 gap-2 md:gap-4">
             <Header />
 
-            <!--
-        Mobile menu overlay — absolutely positioned to cover the main content area.
-        On mobile: top = 8px padding + 36px header + 8px gap = 52px
-        Sides and bottom = 8px (matching p-2 page padding)
-        Hidden on desktop via md:hidden.
-      -->
+            <!-- Mobile menu: inset from tokens (--layout-mobile-menu-top / --layout-mobile-menu-inset) -->
             <div
                 id="mobile-menu"
-                class="md:hidden absolute z-50 flex flex-col"
-                style="display: none; top: 52px; left: 8px; right: 8px; bottom: 8px;"
+                class="md:hidden absolute z-50 flex flex-col overscroll-contain"
+                style="display: none; top: var(--layout-mobile-menu-top); left: var(--layout-mobile-menu-inset); right: var(--layout-mobile-menu-inset); bottom: var(--layout-mobile-menu-inset);"
             >
                 <!-- Outer frame: lime-1 bg + border (mirrors main frame) -->
                 <div
@@ -160,13 +155,15 @@ const currentPath = Astro.url.pathname;
 
             <!-- Main content panel: outer (lime-1 bg) → inner (cyan-1 bg) -->
             <main
+                id="main-content"
+                tabindex="-1"
                 class={`flex-1 min-h-0 ${noInnerCard ? "" : "bg-lime-1 border border-frame-stroke p-1"}`}
             >
                 {
                     noInnerCard ? (
                         <slot />
                     ) : (
-                        <div class="bg-cyan-1 border border-frame-stroke rounded-sm h-full overflow-auto">
+                        <div class="bg-cyan-1 border border-frame-stroke rounded-sm h-full min-h-0 overflow-auto overscroll-y-contain">
                             <slot />
                         </div>
                     )
@@ -185,11 +182,16 @@ const currentPath = Astro.url.pathname;
             const btnText = document.getElementById("menu-btn-text");
 
             if (menuBtn && overlay && btnText) {
+                const setMenuOpen = (open: boolean) => {
+                    overlay.style.display = open ? "flex" : "none";
+                    menuBtn.setAttribute("aria-expanded", String(open));
+                    btnText.textContent = open ? "Close Menu" : "Open Menu";
+                };
+                setMenuOpen(false);
+
                 menuBtn.addEventListener("click", () => {
                     const isOpen = overlay.style.display === "flex";
-                    overlay.style.display = isOpen ? "none" : "flex";
-                    btnText.textContent = isOpen ? "Open Menu" : "Close Menu";
-                    btnText.removeAttribute("aria-label");
+                    setMenuOpen(!isOpen);
                 });
             }
         </script>

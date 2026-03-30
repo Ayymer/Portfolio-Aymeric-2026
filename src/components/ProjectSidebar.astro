@@ -13,7 +13,7 @@ const { projects, activeId, class: className } = Astro.props;
 
 <div class:list={['flex flex-col gap-[2px] p-1 bg-lime-1 border border-frame-stroke', className]}>
   <div class="flex items-center px-1 h-6">
-    <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+    <span class="text-[14px] leading-6 text-lime-12 whitespace-nowrap font-mono">
       / Work Selection - [{projects.length}]
     </span>
   </div>
@@ -27,7 +27,7 @@ const { projects, activeId, class: className } = Astro.props;
           href={`/works/${p.id}`}
           data-hover-shuffle="children"
           class:list={[
-            'project-row flex items-center gap-2 py-1 border-b border-border-muted w-full text-left transition-colors h-8',
+            'project-row flex items-center gap-2 py-1 border-b border-border-muted w-full min-w-0 text-left transition-colors motion-reduce:transition-none h-8',
             isActive && 'bg-cyan-3',
           ]}
           data-slug={p.id}
@@ -42,7 +42,7 @@ const { projects, activeId, class: className } = Astro.props;
           </span>
           <span
             data-hover-shuffle-child
-            class="text-[16px] leading-6 font-light text-lime-12 whitespace-nowrap font-lausanne"
+            class="min-w-0 truncate text-[16px] leading-6 font-light text-lime-12 font-lausanne"
           >
             {p.data.title}
           </span>

@@ -44,18 +44,19 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
           <a
             href="/works"
             data-hover-shuffle
-            class="md:hidden text-[12px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity"
+            class="md:hidden text-[14px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity motion-reduce:transition-none"
+            aria-label="Back to works"
           >
             &larr;
           </a>
-          <span class="text-[12px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+          <span class="text-[14px] leading-6 text-lime-12 whitespace-nowrap font-mono">
             / {project.data.title}
           </span>
         </div>
         <a
           href="/works"
           data-hover-shuffle
-          class="text-[12px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity"
+          class="text-[14px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity motion-reduce:transition-none"
           aria-label="Close project"
         >
           &times;
@@ -68,7 +69,7 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
           <div class="scroll-content flex flex-col gap-8">
 
         <!-- Title -->
-        <h1 class="text-[48px] leading-[48px] font-bold text-lime-12 tracking-[-1.5px] font-lausanne">
+        <h1 class="text-[48px] leading-[48px] font-book text-lime-11 tracking-[-1.5px] font-lausanne text-balance">
           {project.data.title}
         </h1>
 
@@ -129,8 +130,9 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
               <Image
                 src={project.data.coverImage}
                 alt={project.data.title}
-                class="w-full rounded-sm shrink-0 object-cover"
-                style="height: 624px;"
+                width={project.data.coverImage.width}
+                height={project.data.coverImage.height}
+                class="w-full rounded-sm shrink-0 object-cover max-h-[624px]"
               />
             ) : (
               <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 624px;"></div>
@@ -148,8 +150,9 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
               <Image
                 src={project.data.secondaryImage}
                 alt={`${project.data.title} — detail`}
-                class="w-full rounded-sm shrink-0 object-cover"
-                style="height: 326px;"
+                width={project.data.secondaryImage.width}
+                height={project.data.secondaryImage.height}
+                class="w-full rounded-sm shrink-0 object-cover max-h-[326px]"
               />
             ) : (
               <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 326px;"></div>
@@ -171,27 +174,32 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
   const content = inner?.querySelector('.scroll-content');
 
   if (container && inner && content) {
-    // Clone content for seamless loop
-    const clone = content.cloneNode(true) as HTMLElement;
-    clone.setAttribute('aria-hidden', 'true');
-    inner.appendChild(clone);
-    document.dispatchEvent(new CustomEvent('pixel-images:added'));
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
 
-    const gap = 32; // gap-8 = 32px
-    let ticking = false;
+    if (!reducedMotion) {
+      const clone = content.cloneNode(true) as HTMLElement;
+      clone.setAttribute('aria-hidden', 'true');
+      inner.appendChild(clone);
+      document.dispatchEvent(new CustomEvent('pixel-images:added'));
 
-    container.addEventListener('scroll', () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const resetPoint = content.offsetHeight + gap;
-          if (container.scrollTop >= resetPoint) {
-            container.scrollTop -= resetPoint;
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    });
+      const gap = 32; // gap-8 = 32px
+      let ticking = false;
+
+      container.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            const resetPoint = content.offsetHeight + gap;
+            if (container.scrollTop >= resetPoint) {
+              container.scrollTop -= resetPoint;
+            }
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+    }
   }
 </script>
 
