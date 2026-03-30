@@ -1,0 +1,563 @@
+---
+---
+<div id="swarm-container" class="absolute inset-0"></div>
+
+<script>
+import * as THREE from 'three';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+
+const CHARS = ['+', '·', '*', '~'];
+
+function smoothstep(e0: number, e1: number, x: number): number {
+    const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+    return t * t * (3 - 2 * t);
+}
+
+function makeDotTexture(): THREE.CanvasTexture {
+    const size = 64;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+    return new THREE.CanvasTexture(canvas);
+}
+
+function makeCharTexture(char: string): THREE.CanvasTexture {
+    const size = 64;
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = 'white';
+    ctx.font = `${size * 0.8}px "IBM Plex Mono", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(char, size / 2, size / 2);
+    return new THREE.CanvasTexture(canvas);
+}
+
+interface CharGroup {
+    points: THREE.Points;
+    geometry: THREE.BufferGeometry;
+    material: THREE.PointsMaterial;
+    texture: THREE.CanvasTexture;
+    posArray: Float32Array;
+    colArray: Float32Array;
+    dotPoints: THREE.Points;
+    dotMaterial: THREE.PointsMaterial;
+}
+
+interface SwarmParams {
+    speed: number;
+    scale: number;
+    softness: number;
+    depth: number;
+    offsetX: number;
+    offsetY: number;
+    rotX: number;
+    rotY: number;
+    rotZ: number;
+}
+
+class ParticlesSwarm {
+    container: HTMLElement;
+    count: number;
+    speedMult: number;
+    params: SwarmParams;
+    mouseTarget: { x: number; y: number };
+    mouseCurrent: { x: number; y: number };
+    mousePixel: { x: number; y: number };
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    renderer: THREE.WebGLRenderer;
+    composer: EffectComposer;
+    target: THREE.Vector3;
+    pColor: THREE.Color;
+    charGroups: CharGroup[];
+    particleGroup: Uint8Array;
+    particleLocalIdx: Uint32Array;
+    positions: THREE.Vector3[];
+    clock: THREE.Clock;
+    rafId: number | null = null;
+    minScale: number;
+    dotTexture: THREE.CanvasTexture;
+    virtualTime: number = 0;
+    prevRawTime: number = 0;
+    useInitBoost: boolean = false;
+
+    constructor(container: HTMLElement, count = 20000, useInitBoost = false) {
+        this.count = count;
+        this.container = container;
+        this.speedMult = 0.2;
+        this.useInitBoost = useInitBoost;
+
+        this.params = { speed: 0.702, scale: 44.52, softness: 4.53, depth: 1, offsetX: 0.32, offsetY: -0.12, rotX: 0, rotY: -0.330592653589793, rotZ: 0 };
+        this.minScale  = this.params.scale;
+        this.dotTexture = makeDotTexture();
+        this.mouseTarget  = { x: 0, y: 0 };
+        this.mouseCurrent = { x: 0, y: 0 };
+        this.mousePixel   = { x: -9999, y: -9999 };
+
+        // SETUP
+        this.scene = new THREE.Scene();
+
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+
+        this.camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 2000);
+        this.camera.position.set(0, 0, 100);
+        this.camera.lookAt(0, 0, 0);
+
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            powerPreference: 'high-performance',
+        });
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.setSize(w, h);
+        this.renderer.setClearColor(0xf9fdfe, 1);
+        const canvas = this.renderer.domElement;
+        canvas.style.position = 'absolute';
+        canvas.style.inset = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        container.appendChild(canvas);
+
+        // POST PROCESSING
+        this.composer = new EffectComposer(this.renderer);
+        this.composer.addPass(new RenderPass(this.scene, this.camera));
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 1.5, 0.4, 0.85);
+        bloomPass.strength = 0;
+        bloomPass.radius = 0.4;
+        bloomPass.threshold = 0;
+        this.composer.addPass(bloomPass);
+
+        // OBJECTS
+        this.target = new THREE.Vector3();
+        this.pColor = new THREE.Color();
+
+        this.particleGroup    = new Uint8Array(count);
+        this.particleLocalIdx = new Uint32Array(count);
+        const groupCounts     = new Array(CHARS.length).fill(0);
+
+        for (let i = 0; i < count; i++) {
+            const g = Math.floor(Math.random() * CHARS.length);
+            this.particleGroup[i]    = g;
+            this.particleLocalIdx[i] = groupCounts[g]++;
+        }
+
+        this.charGroups = CHARS.map((char, gi) => {
+            const n        = groupCounts[gi];
+            const posArray = new Float32Array(n * 3);
+            const colArray = new Float32Array(n * 3).fill(1);
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            geometry.setAttribute('color',    new THREE.BufferAttribute(colArray, 3));
+            const texture  = makeCharTexture(char);
+            const material = new THREE.PointsMaterial({
+                map: texture, size: 2.5, sizeAttenuation: true,
+                vertexColors: true, transparent: true,
+                alphaTest: 0.1, depthWrite: false,
+            });
+            const points = new THREE.Points(geometry, material);
+            this.scene.add(points);
+            const dotMaterial = new THREE.PointsMaterial({
+                map: this.dotTexture, size: 1.2, sizeAttenuation: true,
+                vertexColors: true, transparent: true,
+                alphaTest: 0.1, depthWrite: false,
+            });
+            const dotPoints = new THREE.Points(geometry, dotMaterial);
+            this.scene.add(dotPoints);
+            return { points, geometry, material, texture, posArray, colArray, dotPoints, dotMaterial };
+        });
+
+        this.positions = [];
+        for (let i = 0; i < this.count; i++) {
+            this.positions.push(
+                new THREE.Vector3(
+                    (Math.random() - 0.5) * 100,
+                    (Math.random() - 0.5) * 100,
+                    (Math.random() - 0.5) * 100,
+                )
+            );
+        }
+
+        this.clock = new THREE.Clock();
+        this.animate = this.animate.bind(this);
+
+        // Resize
+        const ro = new ResizeObserver(() => this._onResize());
+        ro.observe(container);
+
+        this._applyOriginOffset();
+
+        // Mouse tilt — listen on the full inner frame so it responds everywhere
+        const frame = container.parentElement || document.body;
+        frame.addEventListener('mousemove', (e: MouseEvent) => {
+            const rect = frame.getBoundingClientRect();
+            const nx = ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+            const ny = ((e.clientY - rect.top)  / rect.height) * 2 - 1;
+            this.mouseTarget.x = ny * -0.15;
+            this.mouseTarget.y = nx *  0.15;
+            // Track pixel coords for repulsion (relative to canvas)
+            const crect = this.container.getBoundingClientRect();
+            this.mousePixel.x = e.clientX - crect.left;
+            this.mousePixel.y = e.clientY - crect.top;
+        });
+
+        this.animate();
+    }
+
+    _onResize() {
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
+        if (w === 0 || h === 0) return;
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(w, h);
+        this.composer.setSize(w, h);
+        this._applyOriginOffset();
+    }
+
+    _applyOriginOffset() {
+        const halfH = Math.tan((Math.PI / 180) * (this.camera.fov / 2)) * 100;
+        const halfW = halfH * this.camera.aspect;
+        const cx = this.params.offsetX * halfW;
+        const cy = this.params.offsetY * halfH;
+        for (const grp of this.charGroups) {
+            grp.points.position.set(cx, cy, 0);
+            grp.dotPoints.position.set(cx, cy, 0);
+        }
+    }
+
+    animate() {
+        this.rafId = requestAnimationFrame(this.animate);
+        const rawTime = this.clock.getElapsedTime();
+        const dt = rawTime - this.prevRawTime;
+        this.prevRawTime = rawTime;
+
+        const INIT_BOOST = 12;
+        const INIT_BOOST_DURATION = 3.5;
+        const boostFraction = this.useInitBoost
+            ? Math.max(0, 1 - rawTime / INIT_BOOST_DURATION)
+            : 0;
+        this.virtualTime += dt * this.speedMult * (1 + boostFraction * INIT_BOOST);
+        const time = this.virtualTime;
+
+        // Scale + opacity synced to particle morph state
+        const { speed } = this.params;
+        const rawPhase = (Math.sin(time * speed * 0.9 - Math.PI / 2) + 1.0) * 0.5;
+        const blend    = rawPhase * rawPhase * (3.0 - 2.0 * rawPhase);
+
+        this.params.scale = this.minScale + (this.maxScale - this.minScale) * blend;
+
+        const charAlpha = smoothstep(0.2, 0.5, blend);
+        const dotAlpha  = 1 - charAlpha;
+        for (const grp of this.charGroups) {
+            grp.material.opacity    = charAlpha;
+            grp.dotMaterial.opacity = dotAlpha;
+        }
+
+        // Soft mouse tilt (lerp factor = 0.03 → very lazy)
+        this.mouseCurrent.x += (this.mouseTarget.x - this.mouseCurrent.x) * 0.03;
+        this.mouseCurrent.y += (this.mouseTarget.y - this.mouseCurrent.y) * 0.03;
+        for (const grp of this.charGroups) {
+            grp.points.rotation.x = this.params.rotX + this.mouseCurrent.x;
+            grp.points.rotation.y = this.params.rotY + this.mouseCurrent.y;
+            grp.points.rotation.z = this.params.rotZ;
+            grp.dotPoints.rotation.x = this.params.rotX + this.mouseCurrent.x;
+            grp.dotPoints.rotation.y = this.params.rotY + this.mouseCurrent.y;
+            grp.dotPoints.rotation.z = this.params.rotZ;
+        }
+
+        const { scale, softness, depth } = this.params;
+        const count = this.count;
+
+        // Cursor in world space (points local — all groups share same position)
+        const halfH = Math.tan((Math.PI / 180) * (this.camera.fov / 2)) * 100;
+        const halfW = halfH * this.camera.aspect;
+        const mNdcX = (this.mousePixel.x / this.container.clientWidth)  * 2 - 1;
+        const mNdcY = -(this.mousePixel.y / this.container.clientHeight) * 2 + 1;
+        const mLocalX = mNdcX * halfW - this.charGroups[0].points.position.x;
+        const mLocalY = mNdcY * halfH - this.charGroups[0].points.position.y;
+        const REPEL_R = 6;
+        const REPEL_S = 3.0;
+
+        for (let i = 0; i < this.count; i++) {
+            const target = this.target;
+            const color = this.pColor;
+
+            const t0 = i / count;
+
+            const seed1 = Math.sin(t0 * 127.1 + 311.7);
+            const seed2 = Math.sin(t0 * 269.5 + 183.3);
+            const seed3 = Math.sin(t0 * 419.2 + 74.9);
+            const seed4 = Math.sin(t0 * 531.6 + 228.1);
+            const rand1 = seed1 - Math.floor(seed1);
+            const rand2 = seed2 - Math.floor(seed2);
+            const rand3 = seed3 - Math.floor(seed3);
+            const rand4 = seed4 - Math.floor(seed4);
+
+            const nx = (rand1 - 0.5) * softness;
+            const ny = (rand2 - 0.5) * softness;
+            const nz = (rand3 - 0.5) * softness * 0.4;
+
+            let px = 0, py = 0, pz = 0;
+            let h = 0, s = 0, l = 0;
+
+            if (t0 < 0.12) {
+                const tCore = t0 / 0.12;
+                const theta = tCore * Math.PI * 2.0 * 30.0;
+                const rFill = Math.sqrt(tCore);
+                const cosT = Math.cos(theta);
+                const sinT = Math.sin(theta);
+
+                const astX = cosT * cosT * cosT * rFill * 0.75;
+                const astY = sinT * sinT * sinT * rFill * 0.75;
+
+                const sphPhi   = tCore * Math.PI * 2.0 * 17.0;
+                const sphTheta = Math.acos(1.0 - 2.0 * (tCore * 0.9999 + 0.00005));
+                const sphR     = rFill * 0.22;
+                const coreX = Math.sin(sphTheta) * Math.cos(sphPhi) * sphR;
+                const coreY = Math.sin(sphTheta) * Math.sin(sphPhi) * sphR;
+                const coreZ = Math.cos(sphTheta) * sphR * depth;
+
+                px = (astX * blend + coreX * (1.0 - blend)) * scale;
+                py = (astY * blend + coreY * (1.0 - blend)) * scale;
+                pz = (0.0  * blend + coreZ * (1.0 - blend)) * scale + nz * 0.3;
+
+                h = 0.46; // shifted toward cyan (0.508) from lime (0.278)
+                s = 0.58;
+                l = 0.31 + 0.10 * Math.sin(time * 2.5 - tCore * 8.0);
+            } else {
+                const tOuter = (t0 - 0.12) / 0.88;
+
+                const orbitRadius = 0.3 + rand1 * 0.7;
+                const orbitSpeed  = 0.4 + rand2 * 0.6;
+                const orbitOffset = rand3 * Math.PI * 2.0;
+                const orbitAngle  = orbitOffset + time * speed * orbitSpeed;
+                const wobble      = 1.0 + 0.12 * Math.sin(time * speed * 1.3 + orbitOffset * 3.7);
+
+                const inclination = rand4 * Math.PI * depth;
+
+                const orbX = Math.cos(orbitAngle) * orbitRadius * wobble;
+                const orbY = Math.sin(orbitAngle) * orbitRadius * wobble;
+
+                const cosInc = Math.cos(inclination);
+                const sinInc = Math.sin(inclination);
+                const clusterX = orbX;
+                const clusterY = orbY * cosInc;
+                const clusterZ = orbY * sinInc;
+
+                const flowerTheta = tOuter * Math.PI * 2.0 * 250.0;
+                const rFill = Math.sqrt(tOuter);
+                const petalShape = 0.38 + 0.62 * Math.cos(5.0 * flowerTheta);
+                const flowerR = petalShape * rFill;
+                const flowerX = Math.cos(flowerTheta) * flowerR;
+                const flowerY = Math.sin(flowerTheta) * flowerR;
+                const flowerZ = depth * (1.0 - flowerR * flowerR) * 0.35;
+
+                px = (clusterX * blend + flowerX * (1.0 - blend)) * scale;
+                py = (clusterY * blend + flowerY * (1.0 - blend)) * scale;
+                pz = (clusterZ * blend + flowerZ * (1.0 - blend)) * scale + nz;
+
+                const dist = Math.sqrt(px * px + py * py) / (scale + 0.001);
+                h = 0.38 + dist * 0.145; // inner: lime-cyan mix → outer: cyan-12
+                s = 0.58 - dist * 0.10;
+                l = 0.47 - dist * 0.16 + 0.06 * Math.sin(time * 1.8 - dist * 7.0);
+            }
+
+            const breathe = 1.0 + 0.035 * Math.sin(time * speed * 1.7);
+
+            target.set((px + nx) * breathe, (py + ny) * breathe, (pz + nz) * breathe);
+
+            // Cursor repulsion
+            const rx = target.x - mLocalX;
+            const ry = target.y - mLocalY;
+            const rdist = Math.sqrt(rx * rx + ry * ry);
+            if (rdist < REPEL_R && rdist > 0.001) {
+                const force = (1 - rdist / REPEL_R) * REPEL_S;
+                target.x += (rx / rdist) * force;
+                target.y += (ry / rdist) * force;
+            }
+
+            color.setHSL(h, s, l);
+
+            this.positions[i].lerp(this.target, 0.05);
+
+            const grp = this.charGroups[this.particleGroup[i]];
+            const li  = this.particleLocalIdx[i] * 3;
+            grp.posArray[li]     = this.positions[i].x;
+            grp.posArray[li + 1] = this.positions[i].y;
+            grp.posArray[li + 2] = this.positions[i].z;
+            grp.colArray[li]     = this.pColor.r;
+            grp.colArray[li + 1] = this.pColor.g;
+            grp.colArray[li + 2] = this.pColor.b;
+        }
+
+        for (const grp of this.charGroups) {
+            grp.geometry.attributes.position.needsUpdate = true;
+            grp.geometry.attributes.color.needsUpdate    = true;
+        }
+
+        this.composer.render();
+    }
+
+    // World-space half-extent of the larger canvas dimension at z=0
+    // → scroll stops exactly when the particle cloud edge meets the frame edge
+    get maxScale(): number {
+        const halfH = Math.tan((Math.PI / 180) * (this.camera.fov / 2)) * this.camera.position.z;
+        const halfW = halfH * this.camera.aspect;
+        return Math.max(halfH, halfW);
+    }
+
+    refreshTextures() {
+        CHARS.forEach((char, gi) => {
+            const grp = this.charGroups[gi];
+            grp.texture.dispose();
+            grp.texture = makeCharTexture(char);
+            grp.material.map = grp.texture;
+            grp.material.needsUpdate = true;
+        });
+    }
+
+    dispose() {
+        if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+        for (const grp of this.charGroups) {
+            grp.geometry.dispose();
+            grp.material.dispose();
+            grp.texture.dispose();
+            this.scene.remove(grp.points);
+            grp.dotMaterial.dispose();
+            this.scene.remove(grp.dotPoints);
+        }
+        this.dotTexture.dispose();
+        this.renderer.dispose();
+    }
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+
+const container = document.getElementById('swarm-container') as HTMLElement;
+if (!container) throw new Error('swarm-container not found');
+
+const navEntry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+const isReload = navEntry?.type === 'reload';
+const isHomepage = window.location.pathname === '/' || window.location.pathname === '';
+const hasSameOriginReferrer = !!document.referrer && new URL(document.referrer).origin === window.location.origin;
+const isFirstHomepageVisit = isHomepage && navEntry?.type === 'navigate' && !hasSameOriginReferrer;
+
+const swarm = new ParticlesSwarm(container, 20000, isReload || isFirstHomepageVisit);
+// Recreate textures once IBM Plex Mono is confirmed loaded
+document.fonts.ready.then(() => swarm.refreshTextures());
+
+// ─── Debug Panel (toggle with Shift+D) ───────────────────────────────────────
+
+const CONTROLS: { key: keyof SwarmParams; label: string; min: number; max: number; step: number; onChange?: () => void }[] = [
+    { key: 'speed',    label: 'Speed',    min: 0.1, max: 3.0, step: 0.001 },
+    { key: 'softness', label: 'Softness', min: 0,   max: 12,  step: 0.01  },
+    { key: 'depth',    label: 'Depth',    min: 0,   max: 1,   step: 0.001 },
+    { key: 'offsetX',  label: 'Offset X', min: -1,        max: 1,       step: 0.01,  onChange: () => swarm._applyOriginOffset() },
+    { key: 'offsetY',  label: 'Offset Y', min: -1,        max: 1,       step: 0.01,  onChange: () => swarm._applyOriginOffset() },
+    { key: 'rotX',     label: 'Rot X',    min: -Math.PI,  max: Math.PI, step: 0.001 },
+    { key: 'rotY',     label: 'Rot Y',    min: -Math.PI,  max: Math.PI, step: 0.001 },
+    { key: 'rotZ',     label: 'Rot Z',    min: -Math.PI,  max: Math.PI, step: 0.001 },
+];
+
+const panel = document.createElement('div');
+panel.id = 'swarm-debug';
+panel.style.cssText = `
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    background: #fbfefa;
+    border: 1px solid rgba(39,63,28,0.7);
+    padding: 12px 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: #273f1c;
+    min-width: 240px;
+    user-select: none;
+`;
+
+const title = document.createElement('div');
+title.textContent = 'swarm debug — Shift+D to close';
+title.style.cssText = 'margin-bottom: 10px; opacity: 0.5; font-size: 10px;';
+panel.appendChild(title);
+
+const sliderEls = new Map<string, HTMLInputElement>();
+const valEls    = new Map<string, HTMLSpanElement>();
+
+for (const ctrl of CONTROLS) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-bottom: 6px;';
+
+    const lbl = document.createElement('span');
+    lbl.textContent = ctrl.label;
+    lbl.style.cssText = 'width: 60px; flex-shrink: 0;';
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min  = String(ctrl.min);
+    slider.max  = String(ctrl.max);
+    slider.step = String(ctrl.step);
+    slider.value = String(swarm.params[ctrl.key]);
+    slider.dataset.key = ctrl.key;
+    slider.style.cssText = 'flex: 1; accent-color: #3b8021;';
+    sliderEls.set(ctrl.key, slider);
+
+    const val = document.createElement('span');
+    val.textContent = Number(swarm.params[ctrl.key]).toFixed(3);
+    val.style.cssText = 'width: 44px; text-align: right; flex-shrink: 0;';
+    valEls.set(ctrl.key, val);
+
+    slider.addEventListener('input', () => {
+        const n = parseFloat(slider.value);
+        swarm.params[ctrl.key] = n;
+        val.textContent = n.toFixed(3);
+        ctrl.onChange?.();
+    });
+
+    row.appendChild(lbl);
+    row.appendChild(slider);
+    row.appendChild(val);
+    panel.appendChild(row);
+}
+
+const btn = document.createElement('button');
+btn.textContent = 'copy json';
+btn.style.cssText = `
+    margin-top: 8px;
+    width: 100%;
+    padding: 4px 0;
+    background: transparent;
+    border: 1px solid rgba(39,63,28,0.7);
+    color: #273f1c;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+`;
+btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(JSON.stringify(swarm.params, null, 2));
+    btn.textContent = 'copied!';
+    setTimeout(() => { btn.textContent = 'copy json'; }, 1500);
+});
+panel.appendChild(btn);
+
+document.body.appendChild(panel);
+
+document.addEventListener('keydown', (e) => {
+    if (e.shiftKey && e.key === 'D') {
+        const next = panel.style.display === 'none' ? 'block' : 'none';
+        panel.style.display = next;
+        if (next === 'block') {
+            // nothing to sync on open
+        }
+    }
+});
+</script>

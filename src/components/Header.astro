@@ -17,12 +17,14 @@ const currentPath = Astro.url.pathname;
         (link.href !== '/' && currentPath.startsWith(link.href));
       return isActive ? (
         <span
+          data-hover-shuffle
           class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-lime-12"        >
           {link.label}
         </span>
       ) : (
         <a
           href={link.href}
+          data-hover-shuffle
           class="hidden md:flex items-center justify-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular opacity-50 hover:opacity-100 transition-opacity text-ghost-fg"        >
           {link.label}
         </a>
@@ -36,6 +38,7 @@ const currentPath = Astro.url.pathname;
     <div class="hidden md:flex items-center">
       {socials.map((social, i) => (<><a
           href={social.href}
+          data-hover-shuffle
           class="flex items-center justify-center min-h-nav-h pl-1 py-0.5 text-[16px] leading-6 font-regular text-ghost-fg hover:opacity-50 transition-opacity"          target={social.href.startsWith('http') ? '_blank' : undefined}
           rel={social.href.startsWith('http') ? 'noopener noreferrer' : undefined}
         >{social.label}</a>{i < socials.length - 1 && <span class="text-[16px] leading-6 text-ghost-fg">,</span>}</>))}
@@ -48,7 +51,7 @@ const currentPath = Astro.url.pathname;
       style="background: none; border: none; cursor: pointer;"
       aria-label="Toggle menu"
     >
-      <span id="menu-btn-text">Open Menu</span>
+      <span id="menu-btn-text" data-hover-shuffle>Open Menu</span>
     </button>
   </div>
 </header>

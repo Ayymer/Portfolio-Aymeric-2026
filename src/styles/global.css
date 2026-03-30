@@ -19,8 +19,8 @@
 
   /* Neutrals */
   --color-ghost:            rgba(255, 255, 255, 0);
-  --color-ghost-fg:         #404040;
-  --color-border-muted:     #737373;
+  --color-ghost-fg:         #273f1c;
+  --color-border-muted:     rgba(39, 63, 28, 0.4);
   --color-frame-stroke:     rgba(39, 63, 28, 0.7);
   --color-placeholder:      #d9d9d9;
 
@@ -58,6 +58,10 @@
   --radius-lg: 8px;
 }
 
+/* ─── Tangerine @font-face ──────────────────────────────────── */
+
+@font-face { font-family: 'Tangerine'; src: url('/fonts/Tangerine-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: block; }
+
 /* ─── TWK Lausanne @font-face declarations ─────────────────── */
 
 @font-face { font-family: 'TWK Lausanne'; src: url('/fonts/TWKLausanne-250.woff2') format('woff2'); font-weight: 250; font-style: normal; font-display: swap; }
@@ -77,5 +81,12 @@
 
   body {
     min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .rendering-pixelated {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges; /* Safari */
   }
 }

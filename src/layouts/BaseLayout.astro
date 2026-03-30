@@ -4,6 +4,7 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "@fontsource/ibm-plex-mono/700.css";
 import Header from "../components/Header.astro";
+import Loader from "../components/Loader.astro";
 import { navLinks, socials } from "../data/navigation";
 
 interface Props {
@@ -56,6 +57,13 @@ const currentPath = Astro.url.pathname;
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link
             rel="preload"
+            href="/fonts/Tangerine-Regular.woff2"
+            as="font"
+            type="font/woff2"
+            crossorigin
+        />
+        <link
+            rel="preload"
             href="/fonts/TWKLausanne-350.woff2"
             as="font"
             type="font/woff2"
@@ -69,6 +77,8 @@ const currentPath = Astro.url.pathname;
     </head>
 
     <body class="bg-gray-1 text-lime-12">
+        <Loader />
+
         <!-- Outer container: 16px page padding on desktop, 8px on mobile -->
         <div class="relative flex flex-col h-screen p-2 md:p-4 gap-2 md:gap-4">
             <Header />
@@ -98,6 +108,7 @@ const currentPath = Astro.url.pathname;
                                 navLinks.map((link) => (
                                     <a
                                         href={link.href}
+                                        data-hover-shuffle
                                         class="flex items-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-lime-1 font-lausanne"
                                     >
                                         {link.label}
@@ -114,6 +125,7 @@ const currentPath = Astro.url.pathname;
                                         <>
                                             <a
                                                 href={social.href}
+                                                data-hover-shuffle
                                                 class="flex items-center min-h-nav-h pl-1 py-0.5 text-[16px] leading-6 font-regular text-lime-1 font-lausanne"
                                                 target={
                                                     social.href.startsWith(
@@ -163,6 +175,11 @@ const currentPath = Astro.url.pathname;
         </div>
 
         <script>
+            import { initTextShuffle } from "../scripts/textShuffle.js";
+
+            initTextShuffle();
+            document.addEventListener("astro:page-load", initTextShuffle);
+
             const menuBtn = document.getElementById("mobile-menu-btn");
             const overlay = document.getElementById("mobile-menu");
             const btnText = document.getElementById("menu-btn-text");
@@ -172,6 +189,7 @@ const currentPath = Astro.url.pathname;
                     const isOpen = overlay.style.display === "flex";
                     overlay.style.display = isOpen ? "none" : "flex";
                     btnText.textContent = isOpen ? "Open Menu" : "Close Menu";
+                    btnText.removeAttribute("aria-label");
                 });
             }
         </script>

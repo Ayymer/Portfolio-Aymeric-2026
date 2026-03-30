@@ -1,0 +1,104 @@
+---
+---
+<div id="loader" aria-hidden="true">
+    <div id="loader-text"></div>
+</div>
+
+<style is:global>
+    #loader {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background-color: #fbfefa;
+        align-items: center;
+        justify-content: center;
+        pointer-events: all;
+    }
+
+    #loader-text span {
+        font-family: 'Tangerine', cursive;
+        font-size: 48px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: #273f1c;
+        display: inline-block;
+        opacity: 0;
+        will-change: opacity;
+    }
+
+    @media (max-width: 640px) {
+        #loader-text span {
+            font-size: 28px;
+        }
+    }
+</style>
+
+<script>
+    (function () {
+        const loader = document.getElementById("loader") as HTMLElement | null;
+        const textEl = document.getElementById("loader-text") as HTMLElement | null;
+        if (!loader || !textEl) return;
+
+        // Determine whether to show the loader
+        const navEntry = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+        const navType = navEntry?.type;
+        const isReload = navType === "reload";
+        const isHomepage = window.location.pathname === "/" || window.location.pathname === "";
+        const hasSameOriginReferrer =
+            !!document.referrer &&
+            new URL(document.referrer).origin === window.location.origin;
+        const isFirstHomepageVisit =
+            isHomepage && navType === "navigate" && !hasSameOriginReferrer;
+
+        if (!isReload && !isFirstHomepageVisit) {
+            loader.remove();
+            return;
+        }
+
+        // Show loader
+        loader.style.display = "flex";
+        document.body.style.overflow = "hidden";
+
+        const NAME = "AYMERIC FREMONT";
+        const spans: HTMLSpanElement[] = [];
+        for (const char of NAME) {
+            const s = document.createElement("span");
+            s.textContent = char === " " ? "\u00A0" : char;
+            textEl.appendChild(s);
+            spans.push(s);
+        }
+
+        // Phase 1: fade in all letters (500ms)
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+                const fadeIn = "opacity 500ms cubic-bezier(0.0, 0.0, 0.2, 1)";
+                spans.forEach((s) => {
+                    s.style.transition = fadeIn;
+                    s.style.opacity = "1";
+                });
+            })
+        );
+
+        // Phase 2: shuffled letter snap-out after 500ms entrance + 1000ms hold
+        setTimeout(() => {
+            [...spans].sort(() => Math.random() - 0.5).forEach((s) => {
+                const delay = Math.random() * 500; // stagger 0–500ms
+                setTimeout(() => {
+                    s.style.transition = "none";
+                    s.style.opacity = "0";
+                }, delay);
+            });
+
+            // After letters are gone, fade out the loader background
+            setTimeout(() => {
+                loader.style.transition = "opacity 400ms ease-out";
+                loader.style.opacity = "0";
+                setTimeout(() => {
+                    loader.remove();
+                    document.body.style.overflow = "";
+                }, 420);
+            }, 550);
+        }, 1500);
+    })();
+</script>

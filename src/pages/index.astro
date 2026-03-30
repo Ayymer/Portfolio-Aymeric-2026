@@ -1,24 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import LogoWidget from '../components/LogoWidget.astro';
+import ParticlesSwarm from '../components/ParticlesSwarm.astro';
 ---
 
 <BaseLayout title="Aymeric Fremont — Designer">
-  <!-- position:relative is the drag boundary for the widget -->
-  <div class="relative h-full p-5">
-    <!-- Bio text -->
-    <div class="max-w-[552px]">
-      <p
-        class="text-[24px] leading-[27px] font-regular text-lime-11"      >
-        I am Aymeric, a designer and aspiring entrepreneur based in Nantes, France.
-        <br /><br />
-        My practice spans UX/UI design, graphic design, branding, illustration, and creative photography, combining aesthetic sensibility with technical precision.
-        <br /><br />
-        At the core of my work is a commitment to eco-responsibility and conscious consumption—I believe design has the duty to shape behavior and influence positive change. I design with a "pixel-perfect" philosophy, embracing a clean, focused aesthetic inspired by the technical world of code and development environments.
-      </p>
+  <!-- position:relative is the drag boundary for the widget and swarm container -->
+  <div class="relative h-full">
+    <!-- Full-frame background canvas -->
+    <ParticlesSwarm />
+
+    <!-- Bio text overlay -->
+    <div class="absolute inset-0 p-5 pointer-events-none">
+      <div class="max-w-[552px] pointer-events-auto">
+        <p class="text-[24px] leading-[27px] font-regular text-lime-11">
+          Aymeric Fremont <sup>(b. 2002, France)</sup>, a designer and maker, moves between UX, brand, and front-end with an obsession for justified detail. He builds at the intersection of craft and ethics, for products that should exist and work beautifully.
+        </p>
+      </div>
     </div>
 
-    <!-- Logo widget — absolutely positioned, draggable when minimized -->
-    <LogoWidget />
   </div>
 </BaseLayout>

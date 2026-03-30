@@ -30,7 +30,9 @@ const projects = (await getCollection('projects')).sort(
 
       <!-- Hover preview -->
       <div id="right-preview" class="hidden flex-1 min-h-0 items-center justify-center bg-cyan-1 border border-frame-stroke rounded-sm overflow-hidden">
-        <img id="preview-thumb" alt="" class="object-contain" style="width: 60%; aspect-ratio: 901/675.75;" />
+        <span id="preview-wrap" class="relative block" style="width: 60%; aspect-ratio: 901/675.75;">
+          <img id="preview-thumb" alt="" class="object-contain w-full h-full" style="opacity: 0;" />
+        </span>
       </div>
 
     </div>
@@ -45,8 +47,59 @@ const projects = (await getCollection('projects')).sort(
   const rightTitle   = document.getElementById('right-title');
   const rightPreview = document.getElementById('right-preview');
   const previewThumb = document.getElementById('preview-thumb') as HTMLImageElement | null;
+  const previewWrap  = document.getElementById('preview-wrap') as HTMLElement | null;
 
-  if (rightLabel && rightSpacer && rightTitle && rightPreview && previewThumb) {
+  // ── Pixel depixelate animation ───────────────────────────────────────
+  const FRAME_STEPS = [8, 16, 32, 48, 96, 128];
+  const FRAME_MS    = 80;
+  const MAX_SIZE    = 128;
+  let animId        = 0;
+
+  function runPixelAnimation(img: HTMLImageElement, wrap: HTMLElement): void {
+    const id = ++animId;
+    wrap.querySelector('canvas')?.remove();
+
+    let cW = img.naturalWidth;
+    let cH = img.naturalHeight;
+    if (cW > MAX_SIZE) { cH = Math.round(cH * MAX_SIZE / cW); cW = MAX_SIZE; }
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = cW;
+    canvas.height = cH;
+    Object.assign(canvas.style, {
+      position: 'absolute', inset: '0',
+      width: '100%', height: '100%',
+      pointerEvents: 'none',
+      imageRendering: 'pixelated',
+    });
+    wrap.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d')!;
+    let step = 0;
+
+    function drawFrame(): void {
+      if (id !== animId) { canvas.remove(); return; }
+      if (step >= FRAME_STEPS.length) {
+        img.style.opacity = '1';
+        setTimeout(() => { if (id === animId) canvas.remove(); }, 100);
+        return;
+      }
+      const cols = FRAME_STEPS[step];
+      const rows = Math.max(1, Math.round(cols * cH / cW));
+      ctx.clearRect(0, 0, cW, cH);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(img, 0, 0, cols, rows);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(canvas, 0, 0, cols, rows, 0, 0, cW, cH);
+      step++;
+      setTimeout(drawFrame, FRAME_MS);
+    }
+
+    drawFrame();
+  }
+  // ────────────────────────────────────────────────────────────────────
+
+  if (rightLabel && rightSpacer && rightTitle && rightPreview && previewThumb && previewWrap) {
     function isMobile() {
       return window.innerWidth < 768;
     }
@@ -55,8 +108,14 @@ const projects = (await getCollection('projects')).sort(
       const thumb = row.dataset.thumb;
 
       if (thumb) {
+        previewThumb.style.opacity = '0';
         previewThumb.src = thumb;
         previewThumb.classList.remove('hidden');
+        if (previewThumb.complete && previewThumb.naturalWidth > 0) {
+          runPixelAnimation(previewThumb, previewWrap);
+        } else {
+          previewThumb.addEventListener('load', () => runPixelAnimation(previewThumb, previewWrap), { once: true });
+        }
       } else {
         previewThumb.classList.add('hidden');
       }

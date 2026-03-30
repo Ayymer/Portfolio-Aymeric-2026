@@ -1,27 +1,112 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import HalftonePortrait from '../components/HalftonePortrait.astro';
+
+const email = 'contact@aymericfremont.com';
 ---
 
 <BaseLayout
   title="About — Aymeric Fremont"
-  description="About Aymeric Fremont, designer based in Nantes, France."
+  description="Aymeric Fremont — designer and maker based in Nantes. Systems, craft, and conscious design."
 >
-  <div class="flex flex-col h-full p-5 gap-6">
-    <!-- Heading -->
-    <div class="px-[18px] pt-6">
-      <p
-        class="text-[24px] leading-[28px] md:text-[48px] md:leading-[52px] font-book text-lime-11"
-      >
-        At the core of my work is a commitment to eco-responsibility and conscious
-        consumption—I believe design has the duty to shape behavior and influence
-        positive change.
-      </p>
+  <div
+    class="flex flex-col gap-10 md:gap-16 px-4 md:px-5 pt-6 pb-12 md:pb-16 w-full max-w-[1440px] mx-auto"
+  >
+    <p
+      class="font-lausanne font-book text-[28px] leading-[32px] md:text-[48px] md:leading-[48px] tracking-[-1.5px] text-lime-11 text-balance"
+    >
+      Aymeric Fremont is a designer and maker based in Nantes, someone who grew
+      up obsessing over systems and never really stopped.
+    </p>
+
+    <div
+      class="about-placeholder w-full min-h-[200px] md:min-h-[320px] lg:min-h-[400px] rounded-sm border border-border-muted bg-placeholder"
+      role="img"
+      aria-label="Image placeholder"
+    >
     </div>
 
-    <!-- Animated dithering pattern -->
-    <div class="flex-1 mx-[18px] min-h-0">
-      <HalftonePortrait />
+    <section
+      class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
+    >
+      <h2
+        class="text-[24px] leading-[27px] font-regular text-lime-10 font-lausanne"
+      >
+        About
+      </h2>
+      <div
+        class="flex flex-col gap-6 text-[24px] leading-[27px] font-light text-lime-11 font-lausanne"
+      >
+        <p>
+          His practice grew out of a childhood spent in competitive gaming, a
+          world of intricate systems and hidden paths where every decision was a
+          chance to gain an edge.
+        </p>
+        <p>
+          He carries that same analytical curiosity into his work today, geeking
+          out on the precise logic of a grid or the way a carefully chosen
+          padding value can make a digital space feel intentional and grounded.
+        </p>
+        <p>
+          For Aymeric, design is a shared responsibility — a way of shaping
+          how we move through the world — and he finds genuine joy in the craft
+          of making things that are as smart as they are human.
+        </p>
+      </div>
+    </section>
+
+    <div
+      class="about-placeholder w-full min-h-[180px] md:min-h-[280px] lg:min-h-[360px] rounded-sm border border-border-muted bg-placeholder"
+      role="img"
+      aria-label="Image placeholder"
+    >
     </div>
+
+    <section
+      class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
+    >
+      <h2
+        class="text-[24px] leading-[27px] font-regular text-lime-10 font-lausanne"
+      >
+        Values
+      </h2>
+      <p
+        class="text-[24px] leading-[27px] font-light text-lime-11 font-lausanne"
+      >
+        He believes that what he chooses to build should be as conscious as
+        what he chooses to consume, favoring steady impact over noise. His work
+        is a search for alignment — a commitment to missions that matter and
+        the belief that a well-crafted tool can be a form of care.
+      </p>
+    </section>
+
+    <div
+      class="about-placeholder w-full min-h-[120px] md:min-h-[180px] lg:min-h-[220px] rounded-sm border border-border-muted bg-placeholder"
+      role="img"
+      aria-label="Image placeholder"
+    >
+    </div>
+
+    <section
+      class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
+    >
+      <h2
+        class="text-[24px] leading-[27px] font-regular text-lime-10 font-lausanne"
+      >
+        Get in touch
+      </h2>
+      <p
+        class="text-[24px] leading-[27px] font-light text-lime-11 font-lausanne"
+      >
+        If you are dreaming of a smarter way to build something that matters, he
+        would love to help you find its shape. Reach him at{' '}
+        <a
+          class="underline decoration-from-font underline-offset-2 hover:text-lime-10 transition-colors"
+          href={`mailto:${email}`}
+        >
+          {email}
+        </a>
+        .
+      </p>
+    </section>
   </div>
 </BaseLayout>

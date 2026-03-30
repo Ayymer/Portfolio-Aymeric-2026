@@ -43,6 +43,7 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
         <div class="flex items-center gap-2">
           <a
             href="/works"
+            data-hover-shuffle
             class="md:hidden text-[12px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity"
           >
             &larr;
@@ -53,6 +54,7 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
         </div>
         <a
           href="/works"
+          data-hover-shuffle
           class="text-[12px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity"
           aria-label="Close project"
         >
@@ -173,6 +175,7 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
     const clone = content.cloneNode(true) as HTMLElement;
     clone.setAttribute('aria-hidden', 'true');
     inner.appendChild(clone);
+    document.dispatchEvent(new CustomEvent('pixel-images:added'));
 
     const gap = 32; // gap-8 = 32px
     let ticking = false;

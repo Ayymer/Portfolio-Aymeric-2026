@@ -25,6 +25,7 @@ const { projects, activeId, class: className } = Astro.props;
       return (
         <a
           href={`/works/${p.id}`}
+          data-hover-shuffle="children"
           class:list={[
             'project-row flex items-center gap-2 py-1 border-b border-border-muted w-full text-left transition-colors h-8',
             isActive && 'bg-cyan-3',
@@ -39,7 +40,10 @@ const { projects, activeId, class: className } = Astro.props;
           <span class:list={['icon-open shrink-0 text-lime-12', !isActive && 'hidden']}>
             <FolderOpen />
           </span>
-          <span class="text-[16px] leading-6 font-light text-lime-12 whitespace-nowrap font-lausanne">
+          <span
+            data-hover-shuffle-child
+            class="text-[16px] leading-6 font-light text-lime-12 whitespace-nowrap font-lausanne"
+          >
             {p.data.title}
           </span>
         </a>

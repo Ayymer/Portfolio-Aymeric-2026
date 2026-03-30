@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import PixelImage from './PixelImage.astro';
 import type { ImageMetadata } from 'astro';
 
 interface Props {
@@ -11,7 +11,7 @@ const { src, alt = '' } = Astro.props;
 ---
 
 {src ? (
-  <Image src={src} alt={alt} class="case-image w-full shrink-0 object-cover" />
+  <PixelImage src={src} alt={alt} class="case-image w-full shrink-0 object-cover" />
 ) : (
   <div class="case-image w-full bg-placeholder shrink-0 overflow-hidden"></div>
 )}
