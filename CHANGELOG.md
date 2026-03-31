@@ -2,9 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
-## [1.0.4] — Unreleased
+## [1.0.5] — Unreleased
 
 Ongoing development.
+
+## [1.0.4] — 2026-04-01
+
+### Added
+
+- **Home** — Interactive square-cell trail and cyan ripples on canvas (`homeGridTrail.js`, `homeGridPage.ts`); `ParticlesSwarm` retired from the live bundle and preserved under `archive/home-particles-swarm/`.
+- **Works** — Desktop hover preview in the works index sidebar (`worksIndexPreview.js`) with the same pixel-reveal treatment as case imagery.
+- **Build & SEO** — `scripts/build-og-default.mjs` and `prebuild` hook; default Open Graph image at `public/og-default.png`; `src/pages/robots.txt.ts` with sitemap hint.
+- **Security** — `public/_headers` (Netlify-style) and `vercel.json` response headers: Content-Security-Policy (Umami + self), Referrer-Policy, X-Content-Type-Options, X-Frame-Options, Permissions-Policy.
+- **Dependencies** — Committed `package-lock.json` for reproducible installs.
+
+### Changed
+
+- **Performance** — Home grid animation schedules `requestAnimationFrame` only while there is trail, ripple, or pointer work; pauses when the document is hidden; pointer listeners use capture on the home root instead of `window`.
+- **Code quality** — Shared `src/scripts/pixelReveal.ts` for `PixelImage` and works preview; typography scale tokens in `global.css` (`text-body-lg`, `text-mono-sm`, `text-nav`, `text-display`) replace repeated arbitrary `text-[…px]` utilities across layout and pages.
+- **Accessibility** — Mobile menu: **Escape** closes overlay; focus moves to the first nav link when opened and returns to the menu button when closed (without stealing focus on initial load).
+
+### Removed
+
+- **`src/components/ParticlesSwarm.astro`** — Removed from active source; copy lives in `archive/home-particles-swarm/`.
 
 ## [1.0.3] — 2026-03-30
 
