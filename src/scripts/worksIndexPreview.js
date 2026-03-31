@@ -1,7 +1,27 @@
 import { runLoadShuffle } from './textShuffle.js';
 import { runPixelReveal } from './pixelReveal.ts';
+import { initHomeGridTrail } from './homeGridTrail.js';
 
 const projectRows = document.querySelectorAll('.project-row');
+
+/** Grid trail behind the works preview panel (desktop only); paused while preview is open. */
+let worksGridDestroy = null;
+
+function stopWorksGridTrail() {
+  if (worksGridDestroy) {
+    worksGridDestroy();
+    worksGridDestroy = null;
+  }
+}
+
+function startWorksGridTrail() {
+  if (window.innerWidth < 768) return;
+  const root = document.querySelector('[data-works-grid-root]');
+  if (!(root instanceof HTMLElement)) return;
+  stopWorksGridTrail();
+  const d = initHomeGridTrail(root);
+  if (d) worksGridDestroy = d;
+}
 const rightLabel = document.getElementById('right-label');
 const rightSpacer = document.getElementById('right-spacer');
 const rightHeading = document.getElementById('right-heading');
@@ -42,6 +62,8 @@ if (
   }
 
   function showPreview(row) {
+    stopWorksGridTrail();
+
     const thumb = row.dataset.thumb;
 
     if (thumb) {
@@ -76,6 +98,7 @@ if (
     labelRow.classList.remove('flex');
     spacerEl.classList.remove('hidden');
     previewEl.style.display = 'none';
+    startWorksGridTrail();
   }
 
   projectRows.forEach((row) => {
@@ -95,4 +118,10 @@ if (
       hidePreview();
     });
   });
+
+  startWorksGridTrail();
 }
+
+document.addEventListener('astro:before-swap', () => {
+  stopWorksGridTrail();
+});
