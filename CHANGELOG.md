@@ -4,7 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## [1.0.5] — Unreleased
 
-Ongoing development.
+### Added
+
+- **Works** — On desktop, the works index preview column reuses the homepage grid trail and ripples while idle (`data-works-grid-root` + `initHomeGridTrail`); the effect stops while a row hover preview is open and restarts when the pointer leaves.
 
 ## [1.0.4] — 2026-04-01
 

@@ -37,20 +37,40 @@ const projects = (await getCollection('projects')).sort(
       </div>
       <div id="right-spacer" class="h-6 shrink-0"></div>
 
-      <!-- Hover preview -->
-      <div id="right-preview" class="hidden flex-1 min-h-0 items-center justify-center bg-cyan-1 border border-frame-stroke rounded-sm overflow-hidden">
-        <span id="preview-wrap" class="relative block" style="width: 60%; aspect-ratio: 901/675.75;">
-          <img
-            id="preview-thumb"
-            width="902"
-            height="676"
-            loading="lazy"
-            decoding="async"
-            alt=""
-            class="object-contain w-full h-full"
-            style="opacity: 0;"
-          />
-        </span>
+      <!-- Idle: same grid trail as home; covered when hover preview is open -->
+      <div class="relative flex min-h-0 flex-1 flex-col">
+        <div
+          class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-sm border border-frame-stroke bg-cyan-1"
+        >
+          <div class="absolute inset-0" data-works-grid-root aria-hidden="true">
+            <canvas
+              class="pointer-events-none absolute inset-0 z-0 h-full w-full"
+              aria-hidden="true"
+              data-home-grid-canvas></canvas>
+          </div>
+          <div
+            id="right-preview"
+            class="absolute inset-0 z-10 flex min-h-0 flex-col items-center justify-center overflow-hidden bg-cyan-1"
+            style="display: none;"
+          >
+            <span
+              id="preview-wrap"
+              class="relative block"
+              style="width: 60%; aspect-ratio: 901/675.75;"
+            >
+              <img
+                id="preview-thumb"
+                width="902"
+                height="676"
+                loading="lazy"
+                decoding="async"
+                alt=""
+                class="object-contain h-full w-full"
+                style="opacity: 0;"
+              />
+            </span>
+          </div>
+        </div>
       </div>
 
     </div>
