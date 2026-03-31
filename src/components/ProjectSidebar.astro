@@ -13,7 +13,7 @@ const { projects, activeId, class: className } = Astro.props;
 
 <div class:list={['flex flex-col gap-[2px] p-1 bg-lime-1 border border-frame-stroke', className]}>
   <div class="flex items-center px-1 h-6">
-    <span class="text-[14px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+    <span class="text-mono-sm text-lime-12 whitespace-nowrap font-mono">
       / Work Selection - [{projects.length}]
     </span>
   </div>
@@ -42,7 +42,7 @@ const { projects, activeId, class: className } = Astro.props;
           </span>
           <span
             data-hover-shuffle-child
-            class="min-w-0 truncate text-[16px] leading-6 font-light text-lime-12 font-lausanne"
+            class="min-w-0 truncate text-nav font-light text-lime-12 font-lausanne"
           >
             {p.data.title}
           </span>

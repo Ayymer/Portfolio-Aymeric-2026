@@ -17,6 +17,8 @@ interface Props {
   grainSize?: number;
   /** Shader fit inside the canvas */
   fit?: 'cover' | 'contain';
+  /** Inner canvas corners; set false for full-bleed edges */
+  rounded?: boolean;
 }
 
 const {
@@ -30,12 +32,13 @@ const {
   contrast = 0.01,
   grainSize = 0.5,
   fit = 'cover',
+  rounded = true,
 } = Astro.props;
 ---
 
 <figure class:list={['w-full', className]}>
   <div
-    class="w-full overflow-hidden rounded-sm"
+    class:list={['w-full overflow-hidden', rounded && 'rounded-sm']}
     data-halftone-dots-host
     data-image-src={src}
     data-original-colors={originalColors ? 'true' : 'false'}

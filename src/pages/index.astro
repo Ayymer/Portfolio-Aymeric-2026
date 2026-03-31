@@ -1,23 +1,30 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ParticlesSwarm from '../components/ParticlesSwarm.astro';
 ---
 
-<BaseLayout title="Aymeric Fremont — Designer">
-  <!-- position:relative is the drag boundary for the widget and swarm container -->
-  <div class="relative h-full">
-    <!-- Full-frame background canvas -->
-    <ParticlesSwarm />
-
-    <!-- Bio text overlay -->
-    <div class="absolute inset-0 p-5 pointer-events-none">
-      <div class="max-w-[552px] pointer-events-auto">
+<BaseLayout title="Aymeric Fremont — Designer" noOuterFrame>
+  <div class="relative min-h-full" data-home-grid-root>
+    <canvas
+      class="pointer-events-none absolute inset-0 z-0 h-full w-full"
+      aria-hidden="true"
+      data-home-grid-canvas></canvas>
+    <div class="relative z-10 p-5">
+      <div class="max-w-[552px]">
         <h1 class="sr-only">Aymeric Fremont</h1>
-        <p class="text-[24px] leading-[27px] font-regular text-lime-11 text-pretty">
-          Aymeric Fremont <sup>(b. 2002, France)</sup>, a designer and maker, moves between UX, brand, and front-end with an obsession for justified detail. He builds at the intersection of craft and ethics, for products that should exist and work beautifully.
+        <p class="text-body-lg font-regular text-lime-11 text-pretty">
+          Aymeric Fremont <sup class="text-nav">(b. 2002, France)</sup>, a designer
+          and maker, moves between UX, brand, and front-end with an obsession for
+          justified detail. He builds at the intersection of craft and ethics, for
+          products that should exist and work beautifully.
         </p>
       </div>
     </div>
-
   </div>
+
+  <script>
+    import { mountHomeGrid } from "../scripts/homeGridPage.ts";
+
+    mountHomeGrid();
+    document.addEventListener("astro:page-load", mountHomeGrid);
+  </script>
 </BaseLayout>

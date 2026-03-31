@@ -1,0 +1,418 @@
+---
+---
+<div id="ascii-backdrop-root" class="absolute inset-0 z-0 min-h-0"></div>
+
+<script>
+import * as THREE from 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+
+const TITLE_3D = 'AYMERIC';
+/** `public/fonts/helvetiker_regular.typeface.json` (Three.js typeface) */
+const FONT_URL = '/fonts/helvetiker_regular.typeface.json';
+/** Max axis length in world units after auto-fit */
+const TITLE_TARGET_SIZE = 7;
+
+/** 16 glyphs: dense → sparse (low scene luma → high luma) */
+const ATLAS_GLYPHS = ['@', '%', '#', '*', '+', '=', '|', ':', ';', '"', ',', '.', "'", '`', '·', ' '] as const;
+const ATLAS_COLS = ATLAS_GLYPHS.length;
+const ATLAS_CELL = 56;
+/** CSS px per ASCII cell; multiplied by DPR in shader for crisp physical pixels */
+const LOGICAL_CELL_PX = 12;
+const MAX_DPR = 2;
+
+function effectivePixelRatio(): number {
+    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    const nav = typeof navigator !== 'undefined' ? navigator : undefined;
+    if (nav && 'connection' in nav && (nav as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData) {
+        return Math.min(dpr, 1);
+    }
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1920;
+    if (w < 480) return Math.min(dpr, 1);
+    if (w < 900) return Math.min(dpr, 1.5);
+    return Math.min(dpr, MAX_DPR);
+}
+
+function disposeObject3D(root: THREE.Object3D): void {
+    root.traverse((obj) => {
+        if (!(obj instanceof THREE.Mesh)) return;
+        obj.geometry?.dispose();
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const m of mats) {
+            if (!m) continue;
+            const mat = m as THREE.MeshLambertMaterial & { normalMap?: THREE.Texture };
+            mat.map?.dispose();
+            mat.normalMap?.dispose();
+            mat.dispose();
+        }
+    });
+}
+
+function cssColorToVec3(css: string): THREE.Vector3 {
+    const c = new THREE.Color(css || '#f9fdfe');
+    return new THREE.Vector3(c.r, c.g, c.b);
+}
+
+function buildGlyphAtlas(): THREE.CanvasTexture {
+    const w = ATLAS_CELL * ATLAS_COLS;
+    const h = ATLAS_CELL;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d')!;
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${Math.floor(ATLAS_CELL * 0.72)}px "IBM Plex Mono", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < ATLAS_COLS; i++) {
+        const ch = ATLAS_GLYPHS[i];
+        const cx = i * ATLAS_CELL + ATLAS_CELL / 2;
+        const cy = h / 2;
+        ctx.fillText(ch, cx, cy);
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.generateMipmaps = false;
+    tex.magFilter = THREE.NearestFilter;
+    tex.minFilter = THREE.NearestFilter;
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.needsUpdate = true;
+    return tex;
+}
+
+const asciiFragmentShader = /* glsl */ `
+uniform sampler2D tScene;
+uniform sampler2D tAtlas;
+uniform vec2 uResolution;
+uniform float uCellPx;
+uniform float uAtlasCols;
+uniform vec3 uBgColor;
+uniform vec3 uGlyphColor;
+uniform vec3 uGlyphShadow;
+
+varying vec2 vUv;
+
+float luma(vec3 c) {
+  return dot(c, vec3(0.2126, 0.7152, 0.0722));
+}
+
+void main() {
+  vec2 res = uResolution;
+  float cell = max(4.0, uCellPx);
+  float cols = floor(res.x / cell);
+  float rows = floor(res.y / cell);
+  vec2 grid = vec2(max(cols, 1.0), max(rows, 1.0));
+
+  vec2 cid = floor(vUv * grid);
+  vec2 cf = fract(vUv * grid);
+  vec2 sceneUv = (cid + 0.5) / grid;
+
+  vec3 sceneCol = texture2D(tScene, sceneUv).rgb;
+  float L = luma(sceneCol);
+  /* One scene sample + screen derivatives (no extra taps vs 4× Sobel) */
+  float edge = clamp((abs(dFdx(L)) + abs(dFdy(L))) * 72.0, 0.0, 1.0);
+
+  float tone = clamp(L * (1.0 - edge * 0.35) + edge * 0.25, 0.0, 1.0);
+  float n = uAtlasCols;
+  float charIdx = floor((1.0 - tone) * (n - 0.001));
+
+  vec2 atlasUv = vec2((charIdx + cf.x) / n, cf.y);
+  float g = texture2D(tAtlas, atlasUv).r;
+
+  float shade = 0.28 + 0.72 * tone;
+  vec3 charCol = mix(uGlyphShadow, uGlyphColor, shade);
+  vec3 outRgb = mix(uBgColor, charCol, g);
+  gl_FragColor = vec4(outRgb, 1.0);
+}
+`;
+
+const asciiVertexShader = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
+}
+`;
+
+class HomeAsciiBackdrop {
+    container: HTMLElement;
+    renderer: THREE.WebGLRenderer;
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    rt: THREE.WebGLRenderTarget;
+    modelRoot: THREE.Group;
+    clock: THREE.Clock;
+    postScene: THREE.Scene;
+    postCam: THREE.OrthographicCamera;
+    postMat: THREE.ShaderMaterial;
+    postMesh: THREE.Mesh;
+    atlas: THREE.CanvasTexture;
+    mouseTarget = { x: 0, y: 0 };
+    mouseCurrent = { x: 0, y: 0 };
+    rafId: number | null = null;
+    resizeRaf: number | null = null;
+    resizeObserver: ResizeObserver;
+    frameEl: HTMLElement;
+
+    constructor(container: HTMLElement) {
+        this.container = container;
+        this.clock = new THREE.Clock();
+        this.frameEl = container.parentElement || document.body;
+
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(50, w / Math.max(h, 1), 0.1, 100);
+        this.camera.position.set(0, 0, 14);
+
+        const rootStyle = getComputedStyle(document.documentElement);
+        /** RT clears to panel bg; mesh stays saturated so luma/edges drive glyphs */
+        const sceneClearCss = rootStyle.getPropertyValue('--color-cyan-1').trim();
+        const meshColorCss = rootStyle.getPropertyValue('--color-lime-10').trim();
+        /** Light paper (cyan-1); dark glyphs so they don’t match lime-11 bio copy */
+        const postBgCss = rootStyle.getPropertyValue('--color-cyan-1').trim();
+        const glyphCss = rootStyle.getPropertyValue('--color-cyan-12').trim();
+        const glyphShadowCss = rootStyle.getPropertyValue('--color-lime-12').trim();
+
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: false,
+            powerPreference: 'high-performance',
+        });
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+        this.renderer.setPixelRatio(effectivePixelRatio());
+        this.renderer.setSize(w, h, false);
+        this.renderer.setClearColor(new THREE.Color(sceneClearCss || '#f9fdfe'), 1);
+        const canvas = this.renderer.domElement;
+        canvas.style.position = 'absolute';
+        canvas.style.inset = '0';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.backgroundColor = sceneClearCss || '#f9fdfe';
+        container.appendChild(canvas);
+
+        const bufW = this.renderer.domElement.width;
+        const bufH = this.renderer.domElement.height;
+        const dpr = this.renderer.getPixelRatio();
+
+        this.rt = new THREE.WebGLRenderTarget(bufW, bufH, {
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            colorSpace: THREE.SRGBColorSpace,
+            depthBuffer: true,
+            stencilBuffer: false,
+        });
+        this.rt.texture.colorSpace = THREE.SRGBColorSpace;
+        this.rt.texture.flipY = false;
+        this.rt.texture.generateMipmaps = false;
+
+        const amb = new THREE.AmbientLight(0xffffff, 0.58);
+        this.scene.add(amb);
+        const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+        dir.position.set(4, 6, 8);
+        this.scene.add(dir);
+
+        this.modelRoot = new THREE.Group();
+        this.scene.add(this.modelRoot);
+
+        const titleColor = new THREE.Color(meshColorCss || '#5fbf36');
+        const fontLoader = new FontLoader();
+        fontLoader.load(
+            FONT_URL,
+            (font) => {
+                const geo = new TextGeometry(TITLE_3D, {
+                    font,
+                    size: 2.4,
+                    depth: 0.55,
+                    curveSegments: 3,
+                    bevelEnabled: false,
+                });
+                geo.center();
+                const mat = new THREE.MeshLambertMaterial({ color: titleColor });
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.updateMatrixWorld(true);
+                const box = new THREE.Box3().setFromObject(mesh);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z, 1e-3);
+                mesh.scale.setScalar(TITLE_TARGET_SIZE / maxDim);
+                this.modelRoot.add(mesh);
+            },
+            undefined,
+            (err) => {
+                console.error('[HomeAsciiBackdrop] Font load failed:', FONT_URL, err);
+            },
+        );
+
+        this.atlas = buildGlyphAtlas();
+
+        const bgVec = cssColorToVec3(postBgCss || '#f9fdfe');
+        const glyphVec = cssColorToVec3(glyphCss || '#043b45');
+        const shadowVec = cssColorToVec3(glyphShadowCss || '#273f1c');
+
+        this.postMat = new THREE.ShaderMaterial({
+            uniforms: {
+                tScene: { value: this.rt.texture },
+                tAtlas: { value: this.atlas },
+                uResolution: { value: new THREE.Vector2(bufW, bufH) },
+                uCellPx: { value: LOGICAL_CELL_PX * dpr },
+                uAtlasCols: { value: ATLAS_COLS },
+                uBgColor: { value: bgVec },
+                uGlyphColor: { value: glyphVec },
+                uGlyphShadow: { value: shadowVec },
+            },
+            vertexShader: asciiVertexShader,
+            fragmentShader: asciiFragmentShader,
+            depthTest: false,
+            depthWrite: false,
+        });
+
+        const quad = new THREE.PlaneGeometry(2, 2);
+        this.postMesh = new THREE.Mesh(quad, this.postMat);
+        this.postScene = new THREE.Scene();
+        this.postScene.add(this.postMesh);
+        this.postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+        this.tick = this.tick.bind(this);
+        this._onVisibility = this._onVisibility.bind(this);
+        document.addEventListener('visibilitychange', this._onVisibility);
+
+        this.resizeObserver = new ResizeObserver(() => {
+            if (this.resizeRaf !== null) return;
+            this.resizeRaf = requestAnimationFrame(() => {
+                this.resizeRaf = null;
+                this._onResize();
+            });
+        });
+        this.resizeObserver.observe(container);
+
+        this._onMouseMove = this._onMouseMove.bind(this);
+        this.frameEl.addEventListener('mousemove', this._onMouseMove, { passive: true });
+
+        this.rafId = requestAnimationFrame(this.tick);
+    }
+
+    _onVisibility() {
+        if (document.visibilityState === 'hidden') {
+            if (this.rafId !== null) {
+                cancelAnimationFrame(this.rafId);
+                this.rafId = null;
+            }
+        } else if (this.rafId === null) {
+            this.rafId = requestAnimationFrame(this.tick);
+        }
+    }
+
+    _onMouseMove(e: MouseEvent) {
+        const rect = this.frameEl.getBoundingClientRect();
+        const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+        this.mouseTarget.x = ny * 0.45;
+        this.mouseTarget.y = nx * 0.45;
+    }
+
+    _onResize() {
+        const w = this.container.clientWidth;
+        const h = this.container.clientHeight;
+        if (w === 0 || h === 0) return;
+        this.camera.aspect = w / h;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setPixelRatio(effectivePixelRatio());
+        this.renderer.setSize(w, h, false);
+        const bufW = this.renderer.domElement.width;
+        const bufH = this.renderer.domElement.height;
+        this.rt.setSize(bufW, bufH);
+        (this.postMat.uniforms.uResolution.value as THREE.Vector2).set(bufW, bufH);
+        (this.postMat.uniforms.uCellPx as { value: number }).value =
+            LOGICAL_CELL_PX * this.renderer.getPixelRatio();
+    }
+
+    tick() {
+        if (document.visibilityState === 'hidden') {
+            this.rafId = null;
+            return;
+        }
+
+        const t = this.clock.getElapsedTime();
+
+        this.mouseCurrent.x += (this.mouseTarget.x - this.mouseCurrent.x) * 0.04;
+        this.mouseCurrent.y += (this.mouseTarget.y - this.mouseCurrent.y) * 0.04;
+
+        this.modelRoot.rotation.x = t * 0.11 + this.mouseCurrent.x;
+        this.modelRoot.rotation.y = t * 0.15 + this.mouseCurrent.y;
+
+        this.renderer.setRenderTarget(this.rt);
+        this.renderer.render(this.scene, this.camera);
+        this.renderer.setRenderTarget(null);
+        this.renderer.render(this.postScene, this.postCam);
+
+        this.rafId = requestAnimationFrame(this.tick);
+    }
+
+    refreshAtlas() {
+        this.atlas.dispose();
+        this.atlas = buildGlyphAtlas();
+        this.postMat.uniforms.tAtlas.value = this.atlas;
+    }
+
+    dispose() {
+        document.removeEventListener('visibilitychange', this._onVisibility);
+        if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+        if (this.resizeRaf !== null) cancelAnimationFrame(this.resizeRaf);
+        this.resizeObserver.disconnect();
+        this.frameEl.removeEventListener('mousemove', this._onMouseMove);
+        disposeObject3D(this.modelRoot);
+        this.scene.remove(this.modelRoot);
+        this.postMesh.geometry.dispose();
+        this.postMat.dispose();
+        this.rt.dispose();
+        this.atlas.dispose();
+        this.renderer.dispose();
+    }
+}
+
+const root = document.getElementById('ascii-backdrop-root') as HTMLElement | null;
+if (!root) throw new Error('ascii-backdrop-root not found');
+
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reducedMotion) {
+    const bg = getComputedStyle(document.documentElement).getPropertyValue('--color-cyan-1').trim();
+    root.replaceChildren();
+    const fallback = document.createElement('div');
+    fallback.style.cssText = `position:absolute;inset:0;background-color:${bg};`;
+    root.appendChild(fallback);
+} else {
+    let backdrop: HomeAsciiBackdrop | null = null;
+    let roWait: ResizeObserver | null = null;
+
+    const mount = () => {
+        if (root.clientWidth === 0 || root.clientHeight === 0) return false;
+        if (backdrop) return true;
+        backdrop = new HomeAsciiBackdrop(root);
+        document.fonts.ready.then(() => backdrop?.refreshAtlas());
+        return true;
+    };
+
+    const teardown = () => {
+        roWait?.disconnect();
+        roWait = null;
+        backdrop?.dispose();
+        backdrop = null;
+    };
+
+    if (!mount()) {
+        roWait = new ResizeObserver(() => {
+            if (mount()) {
+                roWait?.disconnect();
+                roWait = null;
+            }
+        });
+        roWait.observe(root);
+    }
+
+    document.addEventListener('astro:before-swap', teardown, { once: true });
+}
+</script>

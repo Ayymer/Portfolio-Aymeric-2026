@@ -11,126 +11,138 @@ const email = 'contact@aymericfremont.com';
 <BaseLayout
   title="About — Aymeric Fremont"
   description="Aymeric Fremont — designer and maker based in Nantes. Systems, craft, and conscious design."
+  noOuterFrame
 >
   <div
-    class="flex flex-col gap-10 md:gap-16 px-4 md:px-5 pt-6 pb-12 md:pb-16 w-full max-w-[1440px] mx-auto"
+    class="w-full min-w-0 pt-6 pb-12 md:pb-16 flex flex-col gap-10 md:gap-16"
   >
-    <div class="flex flex-col gap-6">
-      <h1
-        class="font-lausanne font-book text-[48px] leading-[48px] tracking-[-1.5px] text-lime-11 text-balance"
-      >
-        Aymeric Fremont is a designer and maker based in Nantes, someone who grew
-        up obsessing over systems and never really stopped.
-      </h1>
-
-      <HalftoneDotsImage
-        src={aboutLily.src}
-        imgWidth={aboutLily.width}
-        imgHeight={aboutLily.height}
-        originalColors={true}
-        alt="Water lilies and lily pads on dark water"
-        class="overflow-hidden"
-      />
-    </div>
-
-    <section
-      class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
-    >
-      <h2
-        class="text-[24px] leading-[27px] font-regular text-lime-11 font-lausanne text-pretty"
-      >
-        About
-      </h2>
-      <div
-        class="flex flex-col gap-6 text-[24px] leading-[27px] font-light text-lime-11 font-lausanne"
-      >
-        <p>
-          His practice grew out of a childhood spent in competitive gaming, a
-          world of intricate systems and hidden paths where every decision was a
-          chance to gain an edge.
-        </p>
-        <p>
-          He carries that same analytical curiosity into his work today, geeking
-          out on the precise logic of a grid or the way a carefully chosen
-          padding value can make a digital space feel intentional and grounded.
-        </p>
-        <p>
-          For Aymeric, design is a shared responsibility — a way of shaping
-          how we move through the world — and he finds genuine joy in the craft
-          of making things that are as smart as they are human.
-        </p>
-      </div>
-    </section>
-
-    <div
-      class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
-    >
-      <div class="hidden md:block" aria-hidden="true"></div>
-      <HalftoneDotsImage
-        src={aboutPortrait.src}
-        imgWidth={aboutPortrait.width}
-        imgHeight={aboutPortrait.height}
-        originalColors={false}
-        alt="Portrait of Aymeric in the studio"
-        class="overflow-hidden"
-        dotSize={0.42}
-        contrast={0.4}
-        grainSize={0}
-        fit="contain"
-      />
-    </div>
-
-    <section
-      class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
-    >
-      <h2
-        class="text-[24px] leading-[27px] font-regular text-lime-11 font-lausanne text-pretty"
-      >
-        Values
-      </h2>
-      <p
-        class="text-[24px] leading-[27px] font-light text-lime-11 font-lausanne"
-      >
-        He believes that what he chooses to build should be as conscious as
-        what he chooses to consume, favoring steady impact over noise. His work
-        is a search for alignment — a commitment to missions that matter and
-        the belief that a well-crafted tool can be a form of care.
-      </p>
-    </section>
-
-    <div
-      class="relative w-full h-[550px] rounded-sm bg-cyan-1 overflow-hidden"
-      aria-hidden="true"
-    >
-      <TwinkleMask
-        maskUrl="/masks/sun-mask.png"
-        maskSize="contain"
-        maskPosition="center"
-      />
-    </div>
-
-    <section
-      class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
-    >
-      <h2
-        class="text-[24px] leading-[27px] font-regular text-lime-11 font-lausanne text-pretty"
-      >
-        Get in touch
-      </h2>
-      <p
-        class="text-[24px] leading-[27px] font-light text-lime-11 font-lausanne"
-      >
-        If you are dreaming of a smarter way to build something that matters, he
-        would love to help you find its shape. Reach him at{' '}
-        <a
-          class="underline decoration-from-font underline-offset-2 hover:text-lime-10 transition-colors motion-reduce:transition-none"
-          href={`mailto:${email}`}
+    <div class="w-full min-w-0 px-[20px]">
+      <div class="flex flex-col gap-6 w-full min-w-0">
+        <h1
+          class="w-full font-lausanne font-book text-display tracking-[-1.5px] text-lime-11 text-balance"
         >
-          {email}
-        </a>
-        .
-      </p>
-    </section>
+          Aymeric Fremont is a designer and maker based in Nantes, someone who grew up obsessing over systems and never really stopped.
+        </h1>
+
+        <HalftoneDotsImage
+          src={aboutLily.src}
+          imgWidth={aboutLily.width}
+          imgHeight={aboutLily.height}
+          originalColors={true}
+          alt="Water lilies and lily pads on dark water"
+          class="w-full min-w-0 overflow-hidden"
+        />
+      </div>
+    </div>
+
+    <div
+      class="flex flex-col gap-10 md:gap-16 w-full max-w-[1440px] mx-auto px-[20px] min-w-0"
+    >
+      <section
+        class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
+      >
+        <h2
+          class="text-body-lg font-regular text-lime-10 font-lausanne text-pretty"
+        >
+          About
+        </h2>
+        <div
+          class="flex flex-col gap-6 text-body-lg font-light text-lime-11 font-lausanne"
+        >
+          <p>
+            His practice grew out of a childhood spent in competitive gaming, a
+            world of intricate systems and hidden paths where every decision was a
+            chance to gain an edge.
+          </p>
+          <p>
+            He carries that same analytical curiosity into his work today, geeking
+            out on the precise logic of a grid or the way a carefully chosen
+            padding value can make a digital space feel intentional and grounded.
+          </p>
+          <p>
+            For Aymeric, design is a shared responsibility — a way of shaping
+            how we move through the world — and he finds genuine joy in the craft
+            of making things that are as smart as they are human.
+          </p>
+        </div>
+      </section>
+
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
+      >
+        <div class="hidden md:block" aria-hidden="true"></div>
+        <HalftoneDotsImage
+          src={aboutPortrait.src}
+          imgWidth={aboutPortrait.width}
+          imgHeight={aboutPortrait.height}
+          originalColors={false}
+          alt="Portrait of Aymeric in the studio"
+          class="overflow-hidden"
+          dotSize={0.42}
+          contrast={0.4}
+          grainSize={0}
+          fit="contain"
+        />
+      </div>
+
+      <section
+        class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
+      >
+        <h2
+          class="text-body-lg font-regular text-lime-10 font-lausanne text-pretty"
+        >
+          Values
+        </h2>
+        <p
+          class="text-body-lg font-light text-lime-11 font-lausanne"
+        >
+          He believes that what he chooses to build should be as conscious as
+          what he chooses to consume, favoring steady impact over noise. His work
+          is a search for alignment — a commitment to missions that matter and
+          the belief that a well-crafted tool can be a form of care.
+        </p>
+      </section>
+    </div>
+
+    <div class="w-full min-w-0 px-[20px]">
+      <div
+        class="relative w-full min-w-0 h-[550px] rounded-sm bg-cyan-1 overflow-hidden"
+        aria-hidden="true"
+      >
+        <TwinkleMask
+          maskUrl="/masks/sun-mask.png"
+          maskSize="contain"
+          maskPosition="center"
+        />
+      </div>
+    </div>
+
+    <div
+      class="flex flex-col gap-10 md:gap-16 w-full max-w-[1440px] mx-auto px-[20px] min-w-0"
+    >
+      <section
+        class="grid grid-cols-1 md:grid-cols-2 gap-y-2 md:gap-x-8 md:gap-y-0 w-full max-w-[900px] mx-auto"
+      >
+        <h2
+          class="text-body-lg font-regular text-lime-10 font-lausanne text-pretty"
+        >
+          Get in touch
+        </h2>
+        <p
+          class="text-body-lg font-light text-lime-11 font-lausanne"
+        >
+          If you are dreaming of a smarter way to build something that matters, he
+          would love to help you find its shape. Reach him at{' '}
+          <a
+            data-hover-shuffle
+            class="text-lime-10 underline decoration-from-font underline-offset-2 hover:text-lime-11 transition-colors motion-reduce:transition-none"
+            href={`mailto:${email}`}
+          >
+            {email} 
+          </a>
+        </p>
+      </section>
+    </div>
   </div>
 </BaseLayout>
 

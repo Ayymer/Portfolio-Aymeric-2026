@@ -10,7 +10,7 @@ const projects = (await getCollection('projects')).sort(
 
 <BaseLayout title="Works — Aymeric Fremont" noInnerCard>
   <h1 class="sr-only">Works</h1>
-  <div class="flex h-full gap-4 p-1">
+  <div class="flex min-h-0 flex-1 gap-3 lg:gap-4">
 
     <!-- Left column: full width on mobile, fixed 459px on desktop -->
     <ProjectSidebar
@@ -19,15 +19,23 @@ const projects = (await getCollection('projects')).sort(
     />
 
     <!-- ─── Desktop right column (hidden on mobile) ─────────────────── -->
-    <div class="hidden md:flex flex-col flex-1 min-w-0 gap-1 p-1 bg-lime-1 border border-frame-stroke">
+    <div class="hidden md:flex flex-col flex-1 min-w-0 gap-[2px] p-1 bg-lime-1 border border-frame-stroke">
 
-      <!-- Section label -->
-      <div id="right-label" class="items-center h-6 hidden">
-        <span class="text-[14px] leading-6 text-lime-12 whitespace-nowrap font-mono">
-          / <span id="right-title"></span>
-        </span>
+      <!-- Section label (layout matches project page: title + ×-width spacer) -->
+      <div
+        id="right-label"
+        class="hidden w-full min-w-0 items-center justify-between px-1 h-6"
+      >
+        <span
+          id="right-heading"
+          class="min-w-0 truncate text-mono-sm text-lime-12 font-mono"
+        ></span>
+        <span
+          class="invisible pointer-events-none shrink-0 text-mono-sm font-mono"
+          aria-hidden="true"
+        >×</span>
       </div>
-      <div id="right-spacer" class="h-6"></div>
+      <div id="right-spacer" class="h-6 shrink-0"></div>
 
       <!-- Hover preview -->
       <div id="right-preview" class="hidden flex-1 min-h-0 items-center justify-center bg-cyan-1 border border-frame-stroke rounded-sm overflow-hidden">
@@ -51,117 +59,5 @@ const projects = (await getCollection('projects')).sort(
 </BaseLayout>
 
 <script>
-  const rows         = document.querySelectorAll<HTMLAnchorElement>('.project-row');
-  const rightLabel   = document.getElementById('right-label');
-  const rightSpacer  = document.getElementById('right-spacer');
-  const rightTitle   = document.getElementById('right-title');
-  const rightPreview = document.getElementById('right-preview');
-  const previewThumb = document.getElementById('preview-thumb') as HTMLImageElement | null;
-  const previewWrap  = document.getElementById('preview-wrap') as HTMLElement | null;
-
-  // ── Pixel depixelate animation ───────────────────────────────────────
-  const FRAME_STEPS = [8, 16, 32, 48, 96, 128];
-  const FRAME_MS    = 80;
-  const MAX_SIZE    = 128;
-  let animId        = 0;
-
-  function runPixelAnimation(img: HTMLImageElement, wrap: HTMLElement): void {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      img.style.opacity = '1';
-      return;
-    }
-    const id = ++animId;
-    wrap.querySelector('canvas')?.remove();
-
-    let cW = img.naturalWidth;
-    let cH = img.naturalHeight;
-    if (cW > MAX_SIZE) { cH = Math.round(cH * MAX_SIZE / cW); cW = MAX_SIZE; }
-
-    const canvas = document.createElement('canvas');
-    canvas.width  = cW;
-    canvas.height = cH;
-    Object.assign(canvas.style, {
-      position: 'absolute', inset: '0',
-      width: '100%', height: '100%',
-      pointerEvents: 'none',
-      imageRendering: 'pixelated',
-    });
-    wrap.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d')!;
-    let step = 0;
-
-    function drawFrame(): void {
-      if (id !== animId) { canvas.remove(); return; }
-      if (step >= FRAME_STEPS.length) {
-        img.style.opacity = '1';
-        setTimeout(() => { if (id === animId) canvas.remove(); }, 100);
-        return;
-      }
-      const cols = FRAME_STEPS[step];
-      const rows = Math.max(1, Math.round(cols * cH / cW));
-      ctx.clearRect(0, 0, cW, cH);
-      ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(img, 0, 0, cols, rows);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(canvas, 0, 0, cols, rows, 0, 0, cW, cH);
-      step++;
-      setTimeout(drawFrame, FRAME_MS);
-    }
-
-    drawFrame();
-  }
-  // ────────────────────────────────────────────────────────────────────
-
-  if (rightLabel && rightSpacer && rightTitle && rightPreview && previewThumb && previewWrap) {
-    function isMobile() {
-      return window.innerWidth < 768;
-    }
-
-    function showPreview(row: HTMLAnchorElement) {
-      const thumb = row.dataset.thumb;
-
-      if (thumb) {
-        previewThumb.style.opacity = '0';
-        previewThumb.src = thumb;
-        previewThumb.classList.remove('hidden');
-        if (previewThumb.complete && previewThumb.naturalWidth > 0) {
-          runPixelAnimation(previewThumb, previewWrap);
-        } else {
-          previewThumb.addEventListener('load', () => runPixelAnimation(previewThumb, previewWrap), { once: true });
-        }
-      } else {
-        previewThumb.classList.add('hidden');
-      }
-
-      rightTitle.textContent     = row.dataset.title ?? '';
-      rightLabel.style.display   = 'flex';
-      rightSpacer.style.display  = 'none';
-      rightPreview.style.display = 'flex';
-    }
-
-    function hidePreview() {
-      rightLabel.style.display   = 'none';
-      rightSpacer.style.display  = 'block';
-      rightPreview.style.display = 'none';
-    }
-
-    rows.forEach((row) => {
-      row.addEventListener('mouseenter', () => {
-        if (isMobile()) return;
-        row.classList.add('bg-cyan-3');
-        row.querySelector('.icon-closed')?.classList.add('hidden');
-        row.querySelector('.icon-open')?.classList.remove('hidden');
-        showPreview(row);
-      });
-
-      row.addEventListener('mouseleave', () => {
-        if (isMobile()) return;
-        row.classList.remove('bg-cyan-3');
-        row.querySelector('.icon-closed')?.classList.remove('hidden');
-        row.querySelector('.icon-open')?.classList.add('hidden');
-        hidePreview();
-      });
-    });
-  }
+  import '../../scripts/worksIndexPreview.js';
 </script>

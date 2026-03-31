@@ -7,19 +7,21 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "og-image": "node scripts/build-og-default.mjs",
+    "prebuild": "npm run og-image",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.2",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@paper-design/shaders": "^0.0.72",
     "@tailwindcss/vite": "^4.2.2",
     "astro": "^6.0.7",
-    "tailwindcss": "^4.2.2",
-    "three": "^0.183.2"
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
-    "@types/three": "^0.183.1"
+    "@resvg/resvg-js": "^2.6.2"
   }
 }

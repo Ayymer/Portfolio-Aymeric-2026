@@ -5,27 +5,31 @@ import Header from "../components/Header.astro";
 import Loader from "../components/Loader.astro";
 import { navLinks, socials } from "../data/navigation";
 
+const SITE_FALLBACK = "https://aymericfremont.com";
+const DEFAULT_OG_IMAGE = "/og-default.png";
+
 interface Props {
     title?: string;
     description?: string;
     ogImage?: string;
+    ogImageAlt?: string;
     noInnerCard?: boolean;
+    noOuterFrame?: boolean;
 }
 
 const {
     title = "Aymeric Fremont — Designer",
     description = "UX/UI designer and aspiring entrepreneur based in Nantes, France.",
     ogImage,
+    ogImageAlt,
     noInnerCard = false,
+    noOuterFrame = false,
 } = Astro.props;
 
-const canonicalURL = new URL(
-    Astro.url.pathname,
-    Astro.site ?? "https://aymericfremont.com",
-);
-const ogImageURL = ogImage
-    ? new URL(ogImage, Astro.site ?? "https://aymericfremont.com").href
-    : undefined;
+const siteOrigin = Astro.site ?? new URL(SITE_FALLBACK);
+const canonicalURL = new URL(Astro.url.pathname, siteOrigin);
+const ogImageURL = new URL(ogImage ?? DEFAULT_OG_IMAGE, siteOrigin).href;
+const resolvedOgImageAlt = ogImageAlt ?? title;
 
 ---
 
@@ -36,21 +40,22 @@ const ogImageURL = ogImage
         <meta name="theme-color" content="#fbfefa" />
         <meta name="generator" content={Astro.generator} />
         <meta name="description" content={description} />
-        <link rel="canonical" href={canonicalURL} />
+        <link rel="canonical" href={canonicalURL.href} />
         <!-- Open Graph -->
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={canonicalURL} />
+        <meta property="og:url" content={canonicalURL.href} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        {ogImageURL && <meta property="og:image" content={ogImageURL} />}
+        <meta property="og:site_name" content="Aymeric Fremont" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:image" content={ogImageURL} />
+        <meta property="og:image:alt" content={resolvedOgImageAlt} />
         <!-- Twitter -->
-        <meta
-            name="twitter:card"
-            content={ogImageURL ? "summary_large_image" : "summary"}
-        />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
-        {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
+        <meta name="twitter:image" content={ogImageURL} />
+        <meta name="twitter:image:alt" content={resolvedOgImageAlt} />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link
@@ -74,13 +79,17 @@ const ogImageURL = ogImage
             data-website-id="c78092f2-77fd-4462-a428-be1ae7ede712"></script>
     </head>
 
-    <body class="bg-lime-1 text-lime-12">
+    <body
+        class="bg-lime-1 text-lime-12 flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden"
+    >
         <Loader />
 
         <a class="skip-link" href="#main-content">Skip to content</a>
 
-        <!-- Outer container: 16px page padding on desktop, 8px on mobile -->
-        <div class="relative flex flex-col h-screen p-2 md:p-4 gap-2 md:gap-4">
+        <!-- Outer shell: fills viewport; scroll lives inside main (not document) -->
+        <div
+            class="relative flex min-h-0 flex-1 flex-col gap-1 md:gap-2 p-2 md:p-4"
+        >
             <Header />
 
             <!-- Mobile menu: inset from tokens (--layout-mobile-menu-top / --layout-mobile-menu-inset) -->
@@ -104,7 +113,7 @@ const ogImageURL = ogImage
                                     <a
                                         href={link.href}
                                         data-hover-shuffle
-                                        class="flex items-center min-h-nav-h px-2 py-0.5 rounded-lg text-[16px] leading-6 font-regular text-lime-1 font-lausanne"
+                                        class="flex items-center min-h-nav-h px-2 py-0.5 rounded-lg text-nav font-regular text-lime-1 font-lausanne"
                                     >
                                         {link.label}
                                     </a>
@@ -121,7 +130,7 @@ const ogImageURL = ogImage
                                             <a
                                                 href={social.href}
                                                 data-hover-shuffle
-                                                class="flex items-center min-h-nav-h pl-1 py-0.5 text-[16px] leading-6 font-regular text-lime-1 font-lausanne"
+                                                class="flex items-center min-h-nav-h pl-1 py-0.5 text-nav font-regular text-lime-1 font-lausanne"
                                                 target={
                                                     social.href.startsWith(
                                                         "http",
@@ -140,7 +149,7 @@ const ogImageURL = ogImage
                                                 {social.label}
                                             </a>
                                             {i < socials.length - 1 && (
-                                                <span class="text-[16px] leading-6 text-lime-1 font-lausanne">
+                                                <span class="text-nav text-lime-1 font-lausanne">
                                                     ,
                                                 </span>
                                             )}
@@ -157,13 +166,18 @@ const ogImageURL = ogImage
             <main
                 id="main-content"
                 tabindex="-1"
-                class={`flex-1 min-h-0 ${noInnerCard ? "" : "bg-lime-1 border border-frame-stroke p-1"}`}
+                class:list={[
+                    "flex min-h-0 flex-1 flex-col",
+                    !noInnerCard &&
+                        !noOuterFrame &&
+                        "bg-lime-1 border border-frame-stroke p-1",
+                ]}
             >
                 {
                     noInnerCard ? (
                         <slot />
                     ) : (
-                        <div class="bg-cyan-1 border border-frame-stroke rounded-sm h-full min-h-0 overflow-auto overscroll-y-contain">
+                        <div class="flex min-h-0 flex-1 flex-col overflow-auto overscroll-y-contain rounded-sm border border-frame-stroke bg-cyan-1">
                             <slot />
                         </div>
                     )
@@ -172,10 +186,17 @@ const ogImageURL = ogImage
         </div>
 
         <script>
-            import { initTextShuffle } from "../scripts/textShuffle.js";
+            import {
+                initLoadShuffle,
+                initTextShuffle,
+            } from "../scripts/textShuffle.js";
 
             initTextShuffle();
-            document.addEventListener("astro:page-load", initTextShuffle);
+            initLoadShuffle();
+            document.addEventListener("astro:page-load", () => {
+                initTextShuffle();
+                initLoadShuffle();
+            });
 
             const menuBtn = document.getElementById("mobile-menu-btn");
             const overlay = document.getElementById("mobile-menu");
@@ -183,15 +204,31 @@ const ogImageURL = ogImage
 
             if (menuBtn && overlay && btnText) {
                 const setMenuOpen = (open: boolean) => {
+                    const wasOpen = overlay.style.display === "flex";
                     overlay.style.display = open ? "flex" : "none";
                     menuBtn.setAttribute("aria-expanded", String(open));
                     btnText.textContent = open ? "Close Menu" : "Open Menu";
+                    if (open) {
+                        const first = overlay.querySelector<HTMLElement>(
+                            "nav a[href]",
+                        );
+                        requestAnimationFrame(() => first?.focus());
+                    } else if (wasOpen) {
+                        menuBtn.focus();
+                    }
                 };
                 setMenuOpen(false);
 
                 menuBtn.addEventListener("click", () => {
                     const isOpen = overlay.style.display === "flex";
                     setMenuOpen(!isOpen);
+                });
+
+                document.addEventListener("keydown", (e) => {
+                    if (e.key !== "Escape") return;
+                    if (overlay.style.display !== "flex") return;
+                    e.preventDefault();
+                    setMenuOpen(false);
                 });
             }
         </script>

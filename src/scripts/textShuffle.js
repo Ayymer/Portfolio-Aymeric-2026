@@ -101,3 +101,22 @@ export const initTextShuffle = () => {
         });
     });
 };
+
+/** One-shot scramble on mount (same steps/timing as hover shuffle). */
+export function runLoadShuffle(el) {
+    if (prefersReducedMotion()) return;
+    if (!(el instanceof HTMLElement)) return;
+    scrambleElement(el, fullShuffle, 4, 250);
+}
+
+/** Run load shuffle on every `[data-load-shuffle]` (static markup). */
+export function initLoadShuffle() {
+    if (prefersReducedMotion()) return;
+    requestAnimationFrame(() => {
+        for (const el of document.querySelectorAll("[data-load-shuffle]")) {
+            if (!(el instanceof HTMLElement)) continue;
+            if (!el.innerText.trim()) continue;
+            scrambleElement(el, fullShuffle, 4, 250);
+        }
+    });
+}

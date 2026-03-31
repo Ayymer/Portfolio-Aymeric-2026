@@ -23,10 +23,19 @@ const allProjects = (await getCollection('projects')).sort(
 
 const { Content } = await render(project);
 const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImage?.src;
+const projectDescription =
+  project.data.description ??
+  `${project.data.title}: ${project.data.services.join(' · ')} — case study by Aymeric Fremont.`;
 ---
 
-<BaseLayout title={`${project.data.title} — Aymeric Fremont`} ogImage={ogImage} noInnerCard>
-  <div class="flex h-full gap-4 p-1">
+<BaseLayout
+  title={`${project.data.title} — Aymeric Fremont`}
+  description={projectDescription}
+  ogImage={ogImage}
+  ogImageAlt={`${project.data.title} — preview`}
+  noInnerCard
+>
+  <div class="flex min-h-0 flex-1 gap-3 lg:gap-4">
 
     <!-- Left column: file explorer (hidden on mobile) -->
     <ProjectSidebar
@@ -40,48 +49,54 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
 
       <!-- Section label -->
       <div class="flex items-center justify-between px-1 h-6">
-        <div class="flex items-center gap-2">
+        <div class="flex min-w-0 flex-1 items-center gap-2">
           <a
             href="/works"
-            data-hover-shuffle
-            class="md:hidden text-[14px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity motion-reduce:transition-none"
+            class="md:hidden shrink-0 text-nav font-mono text-lime-11 transition-colors hover:text-lime-12 motion-reduce:transition-none"
             aria-label="Back to works"
           >
             &larr;
           </a>
-          <span class="text-[14px] leading-6 text-lime-12 whitespace-nowrap font-mono">
+          <span
+            class="min-w-0 truncate text-mono-sm text-lime-12 font-mono"
+            data-load-shuffle
+          >
             / {project.data.title}
           </span>
         </div>
         <a
           href="/works"
-          data-hover-shuffle
-          class="text-[14px] leading-6 text-lime-12 font-mono opacity-50 hover:opacity-100 transition-opacity motion-reduce:transition-none"
+          class="shrink-0 text-nav font-mono text-lime-11 transition-colors hover:text-lime-12 motion-reduce:transition-none"
           aria-label="Close project"
         >
           &times;
         </a>
       </div>
 
-      <!-- Inner card: scrollable content (infinite loop) -->
-      <div id="scroll-loop" class="flex-1 min-h-0 overflow-auto bg-cyan-1 border border-frame-stroke rounded-sm p-3 scroll-hide">
-        <div id="scroll-inner" class="flex flex-col gap-8">
-          <div class="scroll-content flex flex-col gap-8">
+      <!-- Inner card: scrollable content -->
+      <div class="flex-1 min-h-0 overflow-auto bg-cyan-1 border border-frame-stroke rounded-sm p-3 scroll-hide">
+        <div class="flex flex-col gap-8 pb-lg w-full max-w-[900px] mx-auto min-w-0">
 
         <!-- Title -->
-        <h1 class="text-[48px] leading-[48px] font-book text-lime-11 tracking-[-1.5px] font-lausanne text-balance">
+        <h1 class="text-display font-book text-lime-11 tracking-[-1.5px] font-lausanne text-balance">
           {project.data.title}
         </h1>
 
-        <!-- Metadata table -->
-        <div class="flex flex-col w-full md:w-meta-table md:self-end">
-          <div class="flex items-center justify-between py-[6px] border-b border-dashed border-lime-11">
-            <span class="text-[14px] leading-6 text-lime-11 font-mono">(YEAR)</span>
-            <span class="text-[14px] leading-6 text-lime-11 font-mono">{project.data.year}</span>
+        <!-- Metadata table: never wider than parent (fixes overflow); ms-auto + max-w aligns right when wide -->
+        <div
+          class="ms-auto flex w-full min-w-0 max-w-[var(--width-meta-table)] flex-col"
+        >
+          <div
+            class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1.5 md:gap-x-2 lg:gap-x-6 py-1 lg:py-[6px] border-b border-dashed border-lime-11"
+          >
+            <span class="shrink-0 text-mono-sm text-lime-11 font-mono">(YEAR)</span>
+            <span class="min-w-0 text-right text-mono-sm text-lime-11 font-mono">{project.data.year}</span>
           </div>
-          <div class="flex items-start justify-between py-[6px] border-b border-dashed border-lime-11">
-            <span class="text-[14px] leading-6 text-lime-11 font-mono shrink-0">(SERVICES)</span>
-            <span class="text-[14px] leading-6 text-lime-11 font-mono text-right">
+          <div
+            class="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-1.5 md:gap-x-2 lg:gap-x-6 py-1 lg:py-[6px] border-b border-dashed border-lime-11"
+          >
+            <span class="shrink-0 text-mono-sm text-lime-11 font-mono">(SERVICES)</span>
+            <span class="min-w-0 text-right text-mono-sm text-lime-11 font-mono break-words">
               {project.data.services.map((s, i) => (
                 <>{s}{i < project.data.services.length - 1 && <br />}</>
               ))}
@@ -101,14 +116,15 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
                   {isLast && project.data.closingImage && (
                     <>
                       <CaseImage src={project.data.closingImage} alt={project.data.title} />
-                      <div class="flex flex-col gap-8">
-                        <div class="flex flex-col md:flex-row gap-5 px-2 md:px-section-twocol">
-                          <div class="flex-1"></div>
-                          <div class="flex-1 text-[16px] leading-6 font-light text-lime-11 font-lausanne whitespace-pre-line">
-                            <Content />
-                          </div>
+                      <section
+                        class="w-full min-w-0 max-w-[900px] mx-auto"
+                      >
+                        <div
+                          class="flex flex-col gap-6 text-body-lg font-light text-lime-11 font-lausanne whitespace-pre-line prose-project"
+                        >
+                          <Content />
                         </div>
-                      </div>
+                      </section>
                     </>
                   )}
 
@@ -138,13 +154,20 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
               <div class="w-full bg-placeholder rounded-sm shrink-0" style="height: 624px;"></div>
             )}
 
-            <p class="text-[24px] leading-[27px] font-regular text-lime-11 font-lausanne">About</p>
-
-            <div class="px-2 md:px-0 pb-6" style="--indent: 144px;">
-              <div class="md:pl-[var(--indent)] text-lime-11 font-lausanne prose-project">
+            <section
+              class="grid w-full min-w-0 max-w-[900px] mx-auto grid-cols-1 gap-y-2 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] md:gap-x-4 md:gap-y-0 lg:grid-cols-2 lg:gap-x-8"
+            >
+              <h2
+                class="text-pretty text-body-lg font-regular text-lime-10 font-lausanne"
+              >
+                About
+              </h2>
+              <div
+                class="min-w-0 flex flex-col gap-6 text-body-lg font-light text-lime-11 font-lausanne prose-project"
+              >
                 <Content />
               </div>
-            </div>
+            </section>
 
             {project.data.secondaryImage ? (
               <Image
@@ -160,48 +183,12 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
           </>
         )}
 
-          </div><!-- .scroll-content -->
-        </div><!-- #scroll-inner -->
+        </div>
       </div>
     </div>
 
   </div>
 </BaseLayout>
-
-<script>
-  const container = document.getElementById('scroll-loop');
-  const inner = document.getElementById('scroll-inner');
-  const content = inner?.querySelector('.scroll-content');
-
-  if (container && inner && content) {
-    const reducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)',
-    ).matches;
-
-    if (!reducedMotion) {
-      const clone = content.cloneNode(true) as HTMLElement;
-      clone.setAttribute('aria-hidden', 'true');
-      inner.appendChild(clone);
-      document.dispatchEvent(new CustomEvent('pixel-images:added'));
-
-      const gap = 32; // gap-8 = 32px
-      let ticking = false;
-
-      container.addEventListener('scroll', () => {
-        if (!ticking) {
-          requestAnimationFrame(() => {
-            const resetPoint = content.offsetHeight + gap;
-            if (container.scrollTop >= resetPoint) {
-              container.scrollTop -= resetPoint;
-            }
-            ticking = false;
-          });
-          ticking = true;
-        }
-      });
-    }
-  }
-</script>
 
 <style is:global>
   .scroll-hide {
@@ -212,15 +199,23 @@ const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImag
   }
 
   .prose-project p {
-    font-size: 16px;
-    line-height: 24px;
-    font-weight: var(--font-weight-light);
+    margin: 0;
   }
 
-  @media (min-width: 768px) {
-    .prose-project p {
-      font-size: 24px;
-      line-height: 27px;
+  .prose-project a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    color: var(--color-lime-10, inherit);
+    transition: color 150ms ease;
+  }
+
+  .prose-project a:hover {
+    color: var(--color-lime-11, inherit);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .prose-project a {
+      transition: none;
     }
   }
 </style>

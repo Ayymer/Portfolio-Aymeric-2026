@@ -8,24 +8,31 @@ interface Props {
 const { heading, highlight, detail } = Astro.props;
 ---
 
-<div class="flex flex-col gap-8">
+<section
+  class="grid w-full min-w-0 max-w-[900px] mx-auto grid-cols-1 gap-y-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] md:gap-x-4 md:gap-y-4 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-6"
+>
   {heading && (
-    <div class="px-2 md:px-section-twocol">
-      <p class="text-[24px] leading-[27px] font-regular text-lime-10 font-lausanne">
+    <>
+      <h2
+        class="text-pretty text-body-lg font-regular text-lime-10 font-lausanne"
+      >
         {heading}
-      </p>
-    </div>
+      </h2>
+      <div class="hidden md:block" aria-hidden="true"></div>
+    </>
   )}
-  <div class="flex flex-col md:flex-row gap-5 px-2 md:px-section-twocol">
-    {highlight ? (
-      <p class="flex-1 text-[16px] leading-6 font-light text-lime-10 font-lausanne">
-        {highlight}
-      </p>
-    ) : (
-      <div class="flex-1"></div>
-    )}
-    <div class="flex-1 text-[16px] leading-6 font-light text-lime-11 font-lausanne whitespace-pre-line">
-      {detail}
-    </div>
-  </div>
-</div>
+  {highlight ? (
+    <p
+      class="m-0 min-w-0 text-body-lg font-light text-lime-10 font-lausanne"
+    >
+      {highlight}
+    </p>
+  ) : (
+    <div class="hidden md:block" aria-hidden="true"></div>
+  )}
+  <p
+    class="m-0 min-w-0 text-body-lg font-light text-lime-11 font-lausanne whitespace-pre-line"
+  >
+    {detail}
+  </p>
+</section>

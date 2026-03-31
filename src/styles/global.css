@@ -56,6 +56,28 @@
   /* ─── Border radius ────────────────────────────────────── */
   --radius-sm: 1px;
   --radius-lg: 8px;
+
+  /* ─── Type scale (replaces repeated text-[Npx] / leading pairs) ─── */
+  --text-body-lg: 1.5rem;
+  --text-body-lg--line-height: 1.6875rem;
+  --text-mono-sm: 0.875rem;
+  --text-mono-sm--line-height: 1.5rem;
+  --text-nav: 1rem;
+  --text-nav--line-height: 1.5rem;
+  --text-display: 3rem;
+  --text-display--line-height: 3rem;
+}
+
+/* Works / project sidebar: from `md` up, width scales linearly with viewport between
+   336px @ 768px and 459px @ 1024px (`lg`), then stays capped — avoids a jump at 1024px. */
+@media (min-width: 768px) {
+  :root {
+    --width-sidebar: clamp(
+      336px,
+      calc(336px + (100vw - 768px) * 123 / 256),
+      459px
+    );
+  }
 }
 
 /* ─── Tangerine @font-face ──────────────────────────────────── */
@@ -79,14 +101,15 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Viewport height + overflow come from BaseLayout (h-dvh, overflow-hidden) */
   body {
-    min-height: 100vh;
+    margin: 0;
   }
 
-  /* Mobile menu overlay geometry: page padding (xs) + header + column gap (xs) */
+  /* Mobile menu overlay geometry: page padding (xs) + header + column gap (2xs, matches shell gap-1) */
   :root {
     --layout-mobile-menu-top: calc(
-      var(--spacing-nav-h) + var(--spacing-xs) + var(--spacing-xs)
+      var(--spacing-nav-h) + var(--spacing-xs) + var(--spacing-2xs)
     );
     --layout-mobile-menu-inset: var(--spacing-xs);
   }
