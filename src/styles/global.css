@@ -11,6 +11,7 @@
 
   /* Cyan scale */
   --color-cyan-1:  #f9fdfe;
+  --color-cyan-2:  #f2fbfb;
   --color-cyan-3:  #ddf7f8;
   --color-cyan-12: #043b45;
 
@@ -50,7 +51,7 @@
   --spacing-nav-h:          36px;
   --spacing-section-twocol: 80px;
   --spacing-section-brief:  144px;
-  --width-sidebar:          459px;
+  --width-sidebar:          400px;
   --width-meta-table:       393px;
 
   /* ─── Border radius ────────────────────────────────────── */
@@ -58,6 +59,9 @@
   --radius-lg: 8px;
 
   /* ─── Type scale (replaces repeated text-[Npx] / leading pairs) ─── */
+  /* 1rem = 16px at default root — case study / project page body columns */
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
   --text-body-lg: 1.5rem;
   --text-body-lg--line-height: 1.6875rem;
   --text-mono-sm: 0.875rem;
@@ -69,13 +73,13 @@
 }
 
 /* Works / project sidebar: from `md` up, width scales linearly with viewport between
-   336px @ 768px and 459px @ 1024px (`lg`), then stays capped — avoids a jump at 1024px. */
+   300px @ 768px and 400px @ 1024px (`lg`), then stays capped — leaves more room for case study. */
 @media (min-width: 768px) {
   :root {
     --width-sidebar: clamp(
-      336px,
-      calc(336px + (100vw - 768px) * 123 / 256),
-      459px
+      300px,
+      calc(300px + (100vw - 768px) * 100 / 256),
+      400px
     );
   }
 }

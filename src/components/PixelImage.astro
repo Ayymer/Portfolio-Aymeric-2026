@@ -19,14 +19,14 @@ const {
 } = Astro.props;
 ---
 
-<span class="pixel-image-wrap relative block">
+<span class="pixel-image-wrap block">
   <Image
     src={src}
     alt={alt}
     width={width}
     height={height}
     data-pixel-image
-    class={`opacity-0 w-full h-full object-cover ${className}`}
+    class:list={['opacity-0', className]}
   />
 </span>
 

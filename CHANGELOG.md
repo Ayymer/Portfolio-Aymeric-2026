@@ -2,9 +2,23 @@
 
 All notable changes to this project are documented in this file.
 
-## [1.0.6] — Unreleased
+## [1.0.7] — 2026-04-01
 
-Ongoing development.
+### Added
+
+- **Works** — Home & Stories case study (`src/content/projects/home-stories.md`) with imagery under `src/assets/images/home-stories/` (`homestories_casestudy_img-*.png`).
+
+### Changed
+
+- **Works / case study page** — Project detail layout and section composition updates on `src/pages/works/[slug].astro`; brief and two-column section components adjusted (`BriefSection.astro`, `TwoColumnSection.astro`).
+- **Content** — Lounge Cruise and TiCO project markdown refreshed for the current layout and schema; `content.config.ts` schema tweak as needed.
+- **Design tokens** — Small `global.css` updates aligned with case-study typography and layout.
+
+### Fixed
+
+- **Case imagery** — `CaseImage` / `PixelImage` use a stable aspect slot (in-flow sizer + global slot CSS) so flex layouts no longer collapse or jump while images load; Tailwind preflight on `img` no longer fights the slot sizing.
+- **Pixel reveal** — `pixelReveal.ts` sizes the canvas to the slot aspect and draws with the same `object-fit` semantics as the final image (cover vs contain, including cyan-mat contain), removing the post-reveal alignment shift.
+- **Copy** — Home & Stories brief no longer cites a specific hour count for the engagement.
 
 ## [1.0.5] — 2026-04-01
 

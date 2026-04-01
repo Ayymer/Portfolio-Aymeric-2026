@@ -22,10 +22,12 @@ const allProjects = (await getCollection('projects')).sort(
 );
 
 const { Content } = await render(project);
+const hasClosingMarkdown = Boolean(project.body?.trim());
 const ogImage = project.data.sections?.[0]?.image?.src ?? project.data.coverImage?.src;
 const projectDescription =
   project.data.description ??
   `${project.data.title}: ${project.data.services.join(' · ')} — case study by Aymeric Fremont.`;
+const caseImageCyanMat = project.data.caseImageCyanMat ?? false;
 ---
 
 <BaseLayout
@@ -45,7 +47,7 @@ const projectDescription =
     />
 
     <!-- Right column: project detail -->
-    <div class="flex flex-col flex-1 min-w-0 gap-[2px] p-1 bg-lime-1 border border-frame-stroke">
+    <div class="flex flex-col flex-1 min-w-0 gap-3xs p-1 bg-lime-1 border border-frame-stroke">
 
       <!-- Section label -->
       <div class="flex items-center justify-between px-1 h-6">
@@ -66,7 +68,7 @@ const projectDescription =
         </div>
         <a
           href="/works"
-          class="shrink-0 text-nav font-mono text-lime-11 transition-colors hover:text-lime-12 motion-reduce:transition-none"
+          class="shrink-0 text-lg leading-none font-mono text-lime-12 transition-colors hover:text-lime-10 motion-reduce:transition-none"
           aria-label="Close project"
         >
           &times;
@@ -74,39 +76,43 @@ const projectDescription =
       </div>
 
       <!-- Inner card: scrollable content -->
-      <div class="flex-1 min-h-0 overflow-auto bg-cyan-1 border border-frame-stroke rounded-sm p-3 scroll-hide">
-        <div class="flex flex-col gap-8 pb-lg w-full max-w-[900px] mx-auto min-w-0">
+      <div class="flex-1 min-h-0 overflow-auto bg-cyan-1 border border-frame-stroke rounded-sm px-lg pt-12 pb-sm md:px-xl scroll-hide">
+        <div class="flex flex-col gap-12 pb-xl w-full min-w-0">
 
-        <!-- Title -->
-        <h1 class="text-display font-book text-lime-11 tracking-[-1.5px] font-lausanne text-balance">
-          {project.data.title}
-        </h1>
-
-        <!-- Metadata table: never wider than parent (fixes overflow); ms-auto + max-w aligns right when wide -->
+        <!-- Title + metadata: one row from md (title left, meta right) -->
         <div
-          class="ms-auto flex w-full min-w-0 max-w-[var(--width-meta-table)] flex-col"
+          class="flex w-full min-w-0 flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-8"
         >
-          <div
-            class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1.5 md:gap-x-2 lg:gap-x-6 py-1 lg:py-[6px] border-b border-dashed border-lime-11"
+          <h1
+            class="text-display min-w-0 font-book text-lime-11 tracking-[-1.5px] font-lausanne text-balance md:flex-1"
           >
-            <span class="shrink-0 text-mono-sm text-lime-11 font-mono">(YEAR)</span>
-            <span class="min-w-0 text-right text-mono-sm text-lime-11 font-mono">{project.data.year}</span>
-          </div>
+            {project.data.title}
+          </h1>
           <div
-            class="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-1.5 md:gap-x-2 lg:gap-x-6 py-1 lg:py-[6px] border-b border-dashed border-lime-11"
+            class="flex w-full min-w-0 max-w-(--width-meta-table) shrink-0 flex-col ms-auto md:ms-0"
           >
-            <span class="shrink-0 text-mono-sm text-lime-11 font-mono">(SERVICES)</span>
-            <span class="min-w-0 text-right text-mono-sm text-lime-11 font-mono break-words">
-              {project.data.services.map((s, i) => (
-                <>{s}{i < project.data.services.length - 1 && <br />}</>
-              ))}
-            </span>
+            <div
+              class="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1.5 md:gap-x-2 lg:gap-x-6 py-1 lg:py-[6px] border-b border-dashed border-lime-11"
+            >
+              <span class="shrink-0 text-mono-sm text-lime-11 font-mono">(YEAR)</span>
+              <span class="min-w-0 text-right text-mono-sm text-lime-11 font-mono">{project.data.year}</span>
+            </div>
+            <div
+              class="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-1.5 md:gap-x-2 lg:gap-x-6 py-1 lg:py-[6px] border-b border-dashed border-lime-11"
+            >
+              <span class="shrink-0 text-mono-sm text-lime-11 font-mono">(SERVICES)</span>
+              <span class="min-w-0 text-right text-mono-sm text-lime-11 font-mono wrap-break-word">
+                {project.data.services.map((s, i) => (
+                  <>{s}{i < project.data.services.length - 1 && <br />}</>
+                ))}
+              </span>
+            </div>
           </div>
         </div>
 
         {project.data.sections ? (
           <!-- Case study layout -->
-          <div class="flex flex-col gap-8">
+          <div class="flex flex-col gap-12">
             {project.data.sections.map((section, i) => {
               const sections = project.data.sections!;
               const isLast = i === sections.length - 1;
@@ -115,25 +121,36 @@ const projectDescription =
                   {/* Insert closing image + tools paragraph before the last section */}
                   {isLast && project.data.closingImage && (
                     <>
-                      <CaseImage src={project.data.closingImage} alt={project.data.title} />
-                      <section
-                        class="w-full min-w-0 max-w-[900px] mx-auto"
-                      >
-                        <div
-                          class="flex flex-col gap-6 text-body-lg font-light text-lime-11 font-lausanne whitespace-pre-line prose-project"
-                        >
-                          <Content />
-                        </div>
-                      </section>
+                      <CaseImage
+                        src={project.data.closingImage}
+                        alt={project.data.title}
+                        cyanMat={caseImageCyanMat}
+                      />
+                      {hasClosingMarkdown && (
+                        <section class="w-full min-w-0">
+                          <div
+                            class="flex flex-col gap-8 text-body font-light text-lime-11 font-lausanne whitespace-pre-line prose-project"
+                          >
+                            <Content />
+                          </div>
+                        </section>
+                      )}
                     </>
                   )}
 
-                  <CaseImage src={section.image} alt={section.type === 'image-only' ? project.data.title : section.heading} />
+                  <CaseImage
+                    src={section.image}
+                    alt={section.type === 'image-only' ? project.data.title : section.heading}
+                    cyanMat={caseImageCyanMat}
+                  />
 
                   {section.type === 'brief' ? (
-                    <BriefSection heading={section.heading} content={section.content} />
+                    <BriefSection
+                      heading={section.heading}
+                      content={section.content}
+                    />
                   ) : section.type === 'two-column' ? (
-                    <TwoColumnSection heading={section.heading} highlight={section.highlight} detail={section.detail} />
+                    <TwoColumnSection heading={section.heading} detail={section.detail} />
                   ) : null /* image-only */}
                 </>
               );
@@ -155,7 +172,7 @@ const projectDescription =
             )}
 
             <section
-              class="grid w-full min-w-0 max-w-[900px] mx-auto grid-cols-1 gap-y-2 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] md:gap-x-4 md:gap-y-0 lg:grid-cols-2 lg:gap-x-8"
+              class="grid w-full min-w-0 grid-cols-1 items-start gap-y-2 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] md:gap-x-4 md:gap-y-0 lg:grid-cols-2 lg:gap-x-8"
             >
               <h2
                 class="text-pretty text-body-lg font-regular text-lime-10 font-lausanne"
@@ -163,7 +180,7 @@ const projectDescription =
                 About
               </h2>
               <div
-                class="min-w-0 flex flex-col gap-6 text-body-lg font-light text-lime-11 font-lausanne prose-project"
+                class="min-w-0 flex flex-col gap-8 text-body font-light text-lime-11 font-lausanne prose-project"
               >
                 <Content />
               </div>

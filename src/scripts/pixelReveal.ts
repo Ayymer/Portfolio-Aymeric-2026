@@ -8,6 +8,101 @@ export function pixelRevealPrefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** Match CSS `object-fit: cover` into a dest bitmap (uniform scale, crop). */
+function drawImageObjectCover(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  dW: number,
+  dH: number,
+): void {
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  if (iw <= 0 || ih <= 0 || dW <= 0 || dH <= 0) return;
+  const ir = iw / ih;
+  const dr = dW / dH;
+  let sx: number;
+  let sy: number;
+  let sw: number;
+  let sh: number;
+  if (ir > dr) {
+    sh = ih;
+    sw = ih * dr;
+    sx = (iw - sw) / 2;
+    sy = 0;
+  } else {
+    sw = iw;
+    sh = iw / dr;
+    sx = 0;
+    sy = (ih - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dW, dH);
+}
+
+/** Match CSS `object-fit: contain` (uniform scale, letterbox; dest cleared first). */
+function drawImageObjectContain(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  dW: number,
+  dH: number,
+): void {
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  if (iw <= 0 || ih <= 0 || dW <= 0 || dH <= 0) return;
+  ctx.clearRect(0, 0, dW, dH);
+  const ir = iw / ih;
+  const dr = dW / dH;
+  let tw: number;
+  let th: number;
+  let ox: number;
+  let oy: number;
+  if (ir > dr) {
+    tw = dW;
+    th = dW / ir;
+    ox = 0;
+    oy = (dH - th) / 2;
+  } else {
+    th = dH;
+    tw = dH * ir;
+    ox = (dW - tw) / 2;
+    oy = 0;
+  }
+  ctx.drawImage(img, 0, 0, iw, ih, ox, oy, tw, th);
+}
+
+function resolveObjectFit(
+  wrap: HTMLElement,
+  explicit?: "cover" | "contain",
+): "cover" | "contain" {
+  if (explicit) return explicit;
+  return wrap.closest(".case-image-slot--contain") ? "contain" : "cover";
+}
+
+/** Buffer size ~slot aspect so CSS 100%×100% scales uniformly like the final <img>. */
+function bufferSizeForWrap(wrap: HTMLElement, img: HTMLImageElement): { cW: number; cH: number } {
+  const rect = wrap.getBoundingClientRect();
+  const rw = rect.width;
+  const rh = rect.height;
+  if (rw >= 2 && rh >= 2) {
+    const r = rw / rh;
+    if (rw >= rh) {
+      const cW = Math.min(Math.round(rw), PIXEL_REVEAL_MAX_SIZE);
+      const cH = Math.max(1, Math.round(cW / r));
+      return { cW, cH };
+    }
+    const cH = Math.min(Math.round(rh), PIXEL_REVEAL_MAX_SIZE);
+    const cW = Math.max(1, Math.round(cH * r));
+    return { cW, cH };
+  }
+
+  let cW = img.naturalWidth;
+  let cH = img.naturalHeight;
+  if (cW > PIXEL_REVEAL_MAX_SIZE) {
+    cH = Math.round((cH * PIXEL_REVEAL_MAX_SIZE) / cW);
+    cW = PIXEL_REVEAL_MAX_SIZE;
+  }
+  return { cW: Math.max(1, cW), cH: Math.max(1, cH) };
+}
+
 export type PixelRevealOptions = {
   /** Run when skipping animation or after the last frame (reveal the real image). */
   onComplete: () => void;
@@ -15,6 +110,8 @@ export type PixelRevealOptions = {
   isAborted?: () => boolean;
   /** Use global `.rendering-pixelated` on canvas; otherwise set `imageRendering` inline. */
   useUtilityPixelClass?: boolean;
+  /** Align with the slot’s `object-fit` (default: from `.case-image-slot--contain` or `cover`). */
+  objectFit?: "cover" | "contain";
 };
 
 /**
@@ -25,7 +122,7 @@ export function runPixelReveal(
   wrap: HTMLElement,
   options: PixelRevealOptions,
 ): void {
-  const { onComplete, isAborted, useUtilityPixelClass = false } = options;
+  const { onComplete, isAborted, useUtilityPixelClass = false, objectFit: objectFitOpt } = options;
 
   if (pixelRevealPrefersReducedMotion()) {
     onComplete();
@@ -34,12 +131,8 @@ export function runPixelReveal(
 
   wrap.querySelector("canvas")?.remove();
 
-  let cW = img.naturalWidth;
-  let cH = img.naturalHeight;
-  if (cW > PIXEL_REVEAL_MAX_SIZE) {
-    cH = Math.round((cH * PIXEL_REVEAL_MAX_SIZE) / cW);
-    cW = PIXEL_REVEAL_MAX_SIZE;
-  }
+  const objectFit = resolveObjectFit(wrap, objectFitOpt);
+  const { cW, cH } = bufferSizeForWrap(wrap, img);
 
   const canvas = document.createElement("canvas");
   canvas.width = cW;
@@ -84,7 +177,11 @@ export function runPixelReveal(
 
     ctx.clearRect(0, 0, cW, cH);
     ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(img, 0, 0, cols, rows);
+    if (objectFit === "contain") {
+      drawImageObjectContain(ctx, img, cols, rows);
+    } else {
+      drawImageObjectCover(ctx, img, cols, rows);
+    }
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(canvas, 0, 0, cols, rows, 0, 0, cW, cH);
 

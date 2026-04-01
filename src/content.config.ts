@@ -14,7 +14,6 @@ const projects = defineCollection({
       z.object({
         type: z.literal('two-column'),
         heading: z.string().optional(),
-        highlight: z.string().optional(),
         detail: z.string(),
         image: image().optional(),
       }),
@@ -34,6 +33,7 @@ const projects = defineCollection({
       order: z.number().optional(),
       sections: z.array(sectionSchema).optional(),
       closingImage: image().optional(),
+      caseImageCyanMat: z.boolean().optional(),
     });
   },
 });

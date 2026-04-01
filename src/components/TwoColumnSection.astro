@@ -1,37 +1,28 @@
 ---
 interface Props {
   heading?: string;
-  highlight?: string;
   detail: string;
 }
 
-const { heading, highlight, detail } = Astro.props;
+const { heading, detail } = Astro.props;
 ---
 
 <section
-  class="grid w-full min-w-0 max-w-[900px] mx-auto grid-cols-1 gap-y-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] md:gap-x-4 md:gap-y-4 lg:grid-cols-2 lg:gap-x-8 lg:gap-y-6"
+  class="grid w-full min-w-0 grid-cols-1 items-start gap-y-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] md:gap-x-4 md:gap-y-0 lg:grid-cols-2 lg:gap-x-8"
 >
-  {heading && (
-    <>
+  {
+    heading ? (
       <h2
         class="text-pretty text-body-lg font-regular text-lime-10 font-lausanne"
       >
         {heading}
       </h2>
-      <div class="hidden md:block" aria-hidden="true"></div>
-    </>
-  )}
-  {highlight ? (
-    <p
-      class="m-0 min-w-0 text-body-lg font-light text-lime-10 font-lausanne"
-    >
-      {highlight}
-    </p>
-  ) : (
-    <div class="hidden md:block" aria-hidden="true"></div>
-  )}
+    ) : (
+      <div class="hidden min-w-0 md:block" aria-hidden="true"></div>
+    )
+  }
   <p
-    class="m-0 min-w-0 text-body-lg font-light text-lime-11 font-lausanne whitespace-pre-line"
+    class="m-0 min-w-0 text-body font-light text-lime-11 font-lausanne whitespace-pre-line"
   >
     {detail}
   </p>
